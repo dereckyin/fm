@@ -21,7 +21,7 @@ public class SortUtil {
 	public static boolean ASC = true;
     public static boolean DESC = false;
 
-	
+    static final  boolean OCTO_BUILD = false;
 	
 	private static LinkedHashMap<String, Integer> sortByComparator(Map<String, Integer> unsortMap, final boolean order)
     {
@@ -95,16 +95,16 @@ public class SortUtil {
 			for(Product item : subvalue)
             {
 				// 20160516 count all for 
-            	//if(item.getPrice() != null)
-            	//	if(!item.getPrice().isEmpty())
-            			count++;
-            	/*
-            	// 20160516 count all for 
-            	if(item.getPrice() != null)
-            		if(!item.getPrice().isEmpty())
-            			count++;
-            			
-            	*/
+            	if(OCTO_BUILD == true)
+            	{
+                	if(item.getPrice() != null)
+                		if(!item.getPrice().isEmpty())
+                			count++;
+            	}
+            	else
+            	{
+            		count++;
+            	}
             }
 			pnWeight.put(group_entry.getKey(), count);
 		}
@@ -120,6 +120,47 @@ public class SortUtil {
 		}
 		return returnMap;
 	}
+	
+	// // 20160501 sort by mfs(by product)
+		public static LinkedHashMap<String, List<com.gecpp.p.product.domain.Product>> RegroupIndexResultByMfsProductDetail(LinkedHashMap<String, List<com.gecpp.p.product.domain.Product>> unsortMap)
+		{
+			HashMap<String, Integer> pnWeight = new  HashMap<String, Integer>();
+			
+			LinkedHashMap<String, List<com.gecpp.p.product.domain.Product>> returnMap = new LinkedHashMap<String, List<com.gecpp.p.product.domain.Product>>();
+			
+			for(Map.Entry<String,List<com.gecpp.p.product.domain.Product>> group_entry : unsortMap.entrySet())
+			{
+				int count = 0;
+				List<com.gecpp.p.product.domain.Product> subvalue = group_entry.getValue();
+				
+				for(com.gecpp.p.product.domain.Product item : subvalue)
+	            {
+					// 20160516 count all for 
+	            	if(OCTO_BUILD == true)
+	            	{
+	                	if(item.getStorePrice().getOfficalPrice() != null)
+	                		if(!item.getStorePrice().getOfficalPrice().isEmpty())
+	                			count++;
+	            	}
+	            	else
+	            	{
+	            		count++;
+	            	}
+	            }
+				pnWeight.put(group_entry.getKey(), count);
+			}
+			
+			LinkedHashMap<String, Integer> groupMapByCount = sortByComparator(pnWeight, DESC);
+			
+			for(Map.Entry<String,Integer> group_entry : groupMapByCount.entrySet())
+			{
+				List<com.gecpp.p.product.domain.Product> entryList = new ArrayList<com.gecpp.p.product.domain.Product>();
+				entryList.addAll(unsortMap.get(group_entry.getKey()));
+				
+				returnMap.put(group_entry.getKey(), entryList);	
+			}
+			return returnMap;
+		}
 	
 	
 	public static List<IndexResult> RegroupIndexResult(List<IndexResult> list1, List<IndexResult> list2)

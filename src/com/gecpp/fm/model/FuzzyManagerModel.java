@@ -19,28 +19,33 @@ public class FuzzyManagerModel {
 	{
 		String strSql = "select word, alterword, kind, adjust from qeindexadj";
 		
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		
 		List<IndexAdj> sList = new ArrayList<IndexAdj>();
 
 		try {
 
-			Connection conn = DbHelper.connectFm();
-			Statement stmt = null;
-			ResultSet rs = null;
+			conn = DbHelper.connectFm();
+			
 
 			try {
 				stmt = conn.createStatement();
 				rs = stmt.executeQuery(strSql);
 				while (rs.next())
 					sList.add(new IndexAdj(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getFloat(4)));
-			}
-			finally {
-				DbHelper.attemptClose(rs);
-				DbHelper.attemptClose(stmt);
-				DbHelper.attemptClose(conn);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			DbHelper.attemptClose(rs);
+			DbHelper.attemptClose(stmt);
+			DbHelper.attemptClose(conn);
 		}
 
 		return sList;
@@ -52,26 +57,32 @@ public class FuzzyManagerModel {
 		
 		List<IndexShort> sList = new ArrayList<IndexShort>();
 
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		
 		try {
 
-			Connection conn = DbHelper.connectFm();
-			Statement stmt = null;
-			ResultSet rs = null;
+			conn = DbHelper.connectFm();
+	
 
 			try {
 				stmt = conn.createStatement();
 				rs = stmt.executeQuery(strSql);
 				while (rs.next())
 					sList.add(new IndexShort(rs.getString(1), rs.getString(2)));
+				
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			finally {
-				DbHelper.attemptClose(rs);
-				DbHelper.attemptClose(stmt);
-				DbHelper.attemptClose(conn);
-			}
-
+	
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			DbHelper.attemptClose(rs);
+			DbHelper.attemptClose(stmt);
+			DbHelper.attemptClose(conn);
 		}
 
 		return sList;
@@ -88,28 +99,30 @@ public class FuzzyManagerModel {
 		
 		strSql = "select pn, weight from qeindexweight where pn in (" + pnSql + ") ";
 		
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		
 		try {
-			Connection conn = DbHelper.connectFm();
-			Statement stmt = null;
-			ResultSet rs = null;
-
+			conn = DbHelper.connectFm();
+			
 			try {
 				stmt = conn.createStatement();
 				rs = stmt.executeQuery(strSql);
 				while (rs.next())
 					hashPnWeight.put(rs.getString(1), rs.getInt(2));
 				// System.out.println(rs.getString(0));
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-
-			finally {
-
-				DbHelper.attemptClose(rs);
-				DbHelper.attemptClose(stmt);
-				DbHelper.attemptClose(conn);
-			}
-
+	
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			DbHelper.attemptClose(rs);
+			DbHelper.attemptClose(stmt);
+			DbHelper.attemptClose(conn);
 		}
 		
 		// 再檢查一次，看有沒有漏掉的值
@@ -127,32 +140,34 @@ public class FuzzyManagerModel {
 		String strSql;
 		
 		strSql = "select pn, weight, fullword, kind, page, " + order + " from qeindex where word = '"
-                + stoken + "' order by weight desc limit " + limitNumber;
+                + stoken.replace("'","''") + "' order by weight desc limit " + limitNumber;
 		
 		List<IndexRate> sList = new ArrayList<IndexRate>();
+		
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
 
 		try {
-			Connection conn = DbHelper.connectFm();
-			Statement stmt = null;
-			ResultSet rs = null;
-
+			conn = DbHelper.connectFm();
+		
 			try {
 				stmt = conn.createStatement();
 				rs = stmt.executeQuery(strSql);
 				while (rs.next())
 					sList.add(new IndexRate(rs.getString(1), rs.getFloat(2), rs.getString(3), rs.getInt(4), rs.getInt(5), rs.getInt(6)));
 				// System.out.println(rs.getString(0));
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-
-			finally {
-
-				DbHelper.attemptClose(rs);
-				DbHelper.attemptClose(stmt);
-				DbHelper.attemptClose(conn);
-			}
-
+	
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			DbHelper.attemptClose(rs);
+			DbHelper.attemptClose(stmt);
+			DbHelper.attemptClose(conn);
 		}
 
 		return sList;

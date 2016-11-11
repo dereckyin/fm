@@ -244,7 +244,7 @@ public class DbHelper {
             	else if(i==4)
             		pst.setInt(i,  Integer.parseInt(param));
             	else
-            		pst.setString(i, param);
+            		pst.setString(i, param.substring(0, Math.min(param.length(), 127)));
             	
             	i++;
             }

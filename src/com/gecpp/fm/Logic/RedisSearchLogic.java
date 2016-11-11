@@ -127,8 +127,8 @@ public class RedisSearchLogic {
     		hashIndexCount.clear();
     		hashPnWeight.clear();
         	
-        	// 先取4000筆以上即可
-        	if(nCount > 4000)
+        	// 先取800筆以上即可
+        	if(nCount > 800)
         		break;
         }
         

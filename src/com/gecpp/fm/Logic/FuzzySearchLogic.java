@@ -22,7 +22,7 @@ public class FuzzySearchLogic {
 		List<KeywordKind> keywordKind = keyQuery.getKind();
 		
 		int order = 0;										// 第幾個關鍵字
-		int nNumber = 5000;									// 需搜尋出來的總數
+		int nNumber = 1000;									// 需搜尋出來的總數
 		//int limitNumber = nNumber / keyQuery.getCount();	// 各關鍵字分配到的查詢量
 		
 		// 料號與權重對照表
@@ -73,7 +73,7 @@ public class FuzzySearchLogic {
 		List<KeywordKind> keywordKind = keyQuery.getKind();
 		
 		int order = 0;										// 第幾個關鍵字
-		int nNumber = 5000;									// 需搜尋出來的總數
+		int nNumber = 1000;									// 需搜尋出來的總數
 		//int limitNumber = nNumber / keyQuery.getCount();	// 各關鍵字分配到的查詢量
 		
 		// 料號與權重對照表

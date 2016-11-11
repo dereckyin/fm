@@ -19,6 +19,7 @@ import com.gecpp.fm.Dao.Keyword;
 import com.gecpp.fm.Dao.Keyword.KeywordKind;
 import com.gecpp.fm.Dao.Keyword.NLP;
 import com.gecpp.fm.Dao.MultiKeyword;
+import com.gecpp.fm.Util.CommonUtil;
 import com.gecpp.fm.model.FuzzyManagerModel;
 import com.gecpp.fm.model.OrderManagerModel;
 
@@ -169,6 +170,42 @@ public class KeywordLogic {
 		String[] keywordArray = null;
 		int i = 0;
 		
+		// 20160806 處理空白與料號的問題
+		if (strInput != null && !strInput.isEmpty())
+		{
+			// 2016/02/16 修正大小寫問題
+			strInput = strInput.toUpperCase();
+			
+			keywordArray = strInput.replaceAll("^[,\\s]+", "").split("[\\s]+");
+			
+			//if(keywordArray.length == 1)
+			//{
+				if(OrderManagerModel.IsRealPn(strInput))
+				{
+					Keyword key = new Keyword();
+					
+					List<String> word = new ArrayList<String>();
+					List<KeywordKind> kind = new ArrayList<KeywordKind>();
+					List<NLP> nlp = new ArrayList<NLP>();
+					
+					String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+					
+					word.add(strInput);
+					kind.add(KeywordKind.IsPn);
+					nlp.add(NLP.NotNLP);
+		        	
+		        	key.setUuid(uuid);
+		        	key.setInputdata(strInput);
+		        	 key.setKeyword(word);
+		             key.setKind(kind);
+		             key.setNlp(nlp);
+		             key.setCount(1);
+		             
+		             return key;
+				}
+			//}
+		}
+		
 		// 預先處理
 		if (strInput != null && !strInput.isEmpty())
 		{
@@ -234,8 +271,17 @@ public class KeywordLogic {
             }
             
             // 20160503 one word search always isPn
+            // 20160916 修正搜尋漢字問題
+            // 20161110 非ascii不是 pn
             if(i==1)
-            	kind.set(0, KeywordKind.IsPn);
+            {
+            	//if(CommonUtil.isAllASCII(strInput))
+            	//	kind.set(0, KeywordKind.IsPn);
+            	//else
+            	//	kind.set(0, KeywordKind.NotPn);
+            	if(!CommonUtil.isAllASCII(strInput))
+            		kind.set(0, KeywordKind.NotPn);
+            }
             
             key.setKeyword(word);
             key.setKind(kind);

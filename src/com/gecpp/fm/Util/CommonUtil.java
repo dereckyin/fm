@@ -41,6 +41,18 @@ public class CommonUtil {
 
     }
 	
+	public static boolean isAllASCII(String input) {
+	    boolean isASCII = true;
+	    for (int i = 0; i < input.length(); i++) {
+	        int c = input.charAt(i);
+	        if (c > 0x7F) {
+	            isASCII = false;
+	            break;
+	        }
+	    }
+	    return isASCII;
+	}
+	
 	public static String parsePnKey(String pn) {
         String pnKey = pn;
 
