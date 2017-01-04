@@ -1393,6 +1393,8 @@ public class OmSearchLogic {
 	        for (Store store : storeList) {
 
 	            String currency = store.getCurrency();
+	            float saleRateStr = getSaleRate(
+                        pro.getSupplierId(), currency);
 
 	            List priceList = store.getPriceList();
 
@@ -1422,8 +1424,7 @@ public class OmSearchLogic {
 	                        if (amountObj != null) {
 	                            Integer amount = StringUtils.parseInt(amountObj
 	                                    .toString());
-	                            float saleRateStr = getSaleRate(
-	                                    pro.getSupplierId(), currency);
+	                            
 	                            double priceCount = PriceHelper.multiply(price,
 	                                    saleRateStr);
 	                            priceCount = Math.round(PriceHelper.multiply(
@@ -1508,12 +1509,23 @@ public class OmSearchLogic {
 				//e.printStackTrace();
 			}
 			
+			float tax = 0;
+			try{
+				Object ob = map.get("tax");
+				tax = Float.parseFloat(ob.toString());
+			}
+			catch(Exception e)
+			{
+				//e.printStackTrace();
+			}
+			
 			ProductConfig conf = new ProductConfig((int)map.get("id"), 
 													(int)map.get("supplier_id"), 
 													exchange_rate, 
 													(String)map.get("official_currency"), 
 													(String)map.get("local_currency"),
-													profit_rate);
+													profit_rate,
+													tax);
 			
 			returnList.add(conf);
 			
@@ -1570,6 +1582,8 @@ public class OmSearchLogic {
 			conf.setLocalCurrency(pro.getLocal_currency());
 			
 			conf.setProfitRate(pro.getProfit_rate());
+			
+			conf.setTax(pro.getTax());
 		}
 	
 

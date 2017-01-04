@@ -1375,15 +1375,17 @@ public class OrderManager {
                     }
                 
                     boolean addSupplier = true;
+                    /* 20170104 fix multiprice
                     for(Integer supplierId : listSupplier)
                     {
                     	//if(supplierId == pro.getSupplierid())
-                    	if(supplierId == pro.getId())
+                    	if(supplierId == pro.getId().intValue())
                     	{
                     		addSupplier = false;
                     		break;
                     	}
                     }
+                    */
                     if(addSupplier)
                     {
                     	//listSupplier.add(pro.getSupplierid());
@@ -1524,6 +1526,7 @@ public class OrderManager {
                     }
                 
                     boolean addSupplier = true;
+                    /* 20170104 fix multiprice
                     for(Integer supplierId : listSupplier)
                     {
                     	//if(supplierId == pro.getSupplierid())
@@ -1533,6 +1536,7 @@ public class OrderManager {
                     		break;
                     	}
                     }
+                    */
                     if(addSupplier)
                     {
                     	//listSupplier.add(pro.getSupplierid());
