@@ -2745,10 +2745,10 @@ public class FuzzyInstance {
         keyQuery = PmSearchLogic.PmSearchMulti(keyQuery);
         
         // 再查詢非完全匹配的
-        keyQuery = PmSearchLogic.PmSearchMultiLike(keyQuery);
+        //keyQuery = PmSearchLogic.PmSearchMultiLike(keyQuery);
         
         // 再查詢完全不匹配的
-        keyQuery = RedisSearchLogic.RedisSearchMulti(keyQuery);
+        //keyQuery = RedisSearchLogic.RedisSearchMulti(keyQuery);
         
         // 決定誰該
         OrderManager om = new OrderManager();
@@ -2782,10 +2782,10 @@ public class FuzzyInstance {
 	        keyQuery = PmSearchLogic.PmSearchMulti(keyQuery);
 	        
 	        // 再查詢非完全匹配的
-	        keyQuery = PmSearchLogic.PmSearchMultiLike(keyQuery);
+	        //keyQuery = PmSearchLogic.PmSearchMultiLike(keyQuery);
 	        
 	        // 再查詢完全不匹配的
-	        keyQuery = RedisSearchLogic.RedisSearchMulti(keyQuery);
+	        //keyQuery = RedisSearchLogic.RedisSearchMulti(keyQuery);
 	        
 	        // 決定誰該
 	        OrderManager om = new OrderManager();
@@ -2829,10 +2829,10 @@ public class FuzzyInstance {
         keyQuery = PmSearchLogic.PmSearchMulti(keyQuery);
         
         // 再查詢非完全匹配的
-        keyQuery = PmSearchLogic.PmSearchMultiLike(keyQuery);
+        //keyQuery = PmSearchLogic.PmSearchMultiLike(keyQuery);
         
         // 再查詢完全不匹配的
-        keyQuery = RedisSearchLogic.RedisSearchMulti(keyQuery);
+        //keyQuery = RedisSearchLogic.RedisSearchMulti(keyQuery);
         
         // 決定誰該
         OrderManager om = new OrderManager();

@@ -538,42 +538,123 @@ public class OrderManager {
 		return notRepeatPns;
 	}
     
-    // 20160112 多料號搜尋
-    public ArrayList<MultiKeyword> getProductByMultikeyword(ArrayList<MultiKeyword> notRepeatPns) {
-		
-		if(notRepeatPns == null)
-		{
-			return notRepeatPns;
-		}
-			
-		if(notRepeatPns.size() == 0)
-		{
-			return notRepeatPns;
-		}
-		
-		
-		
-		// 先把所有料號給pm去搜尋
-		for (int i = 0; i < notRepeatPns.size(); i++) {
-			List<Product> pkey = new ArrayList<>();
-            String s = notRepeatPns.get(i).getKeyword();
-            
-            String pnkey = CommonUtil.parsePnKeyNoLike(s);
- 
-            pkey = getAllInforByPnMulti(pnkey);
-            
-            if(pkey.size() != 0)
-            	notRepeatPns.get(i).setSearchtype(1);
-            else
-            	notRepeatPns.get(i).setSearchtype(0);
-            
-            notRepeatPns.get(i).setPkey(pkey);
-        }
-	
-        
-		
-		return notRepeatPns;
-	}
+ // 20160112 多料號搜尋
+  	private List<Product> getAllInforByPnMultiQuick(String pnkey) {
+  		 
+  		/*
+  		String strSql = getAllInfoByPn_headMulti +  "'" + pnkey + "' "  
+  				+ getAllInfoByPn_foot;
+  		*/
+  		
+  		String strSql = getAllInfoByPn_headMulti  + pnkey +  getAllInfoByPn_foot;
+  		
+  		
+  		long startSqlTime = System.currentTimeMillis();
+  		
+  		List<Product> plist = formatToProductListMulti(strSql);
+  		// 20160514 change to search price next time
+  		plist = OmSearchLogic.getPriceByProductList(plist);
+  		
+  		long stopSqlTime = System.currentTimeMillis();
+  		long elapsedSqlTime = stopSqlTime - startSqlTime;
+  		
+  		//InsertQueryLog("getAllInforByPnFuzzy", "Time:" + elapsedSqlTime + strSql, fm_conn);
+          
+  		return plist;
+  	}
+     
+  // 20160112 多料號搜尋
+     public ArrayList<MultiKeyword> getProductByMultikeyword(ArrayList<MultiKeyword> notRepeatPns) {
+ 	
+     	System.out.println(notRepeatPns);
+ 		if(notRepeatPns == null)
+ 		{
+ 			return notRepeatPns;
+ 		}
+ 			
+ 		if(notRepeatPns.size() == 0)
+ 		{
+ 			return notRepeatPns;
+ 		}
+ 		
+ 		// 20170121 improve performace
+ 		List<String> alist = new ArrayList<String>();
+ 		
+ 		for (int i = 0; i < notRepeatPns.size(); i++) {
+ 			alist.add(notRepeatPns.get(i).getKeyword());
+ 			// 先預設每個都沒找到
+ 			notRepeatPns.get(i).setSearchtype(0);
+ 		}
+ 		
+ 		String strSql = CommonUtil.parsePnSql(alist);
+ 		List<Product> pkey = new ArrayList<>();
+ 		
+ 		pkey = getAllInforByPnMultiQuick(strSql);
+ 		
+ 		LinkedHashMap<String, ArrayList<Product>> returnMap = new LinkedHashMap<String, ArrayList<Product>>();
+ 		
+ 		for(int i = 0; i < pkey.size(); i++) {
+ 			
+ 			String key = pkey.get(i).getPn();
+ 			
+ 			if(returnMap.containsKey(key))
+ 			{
+ 				ArrayList<Product> products = returnMap.get(key);
+ 				
+ 				products.add(pkey.get(i));
+ 			}
+ 			else
+ 			{
+ 				ArrayList<Product> products = new ArrayList<Product>();
+ 				
+ 				products.add(pkey.get(i));
+ 				
+ 				returnMap.put(key, products);
+ 			}
+ 			
+ 		}
+ 		
+ 		for(int i = 0; i < notRepeatPns.size(); i++)
+ 		{
+ 			if(returnMap.containsKey(notRepeatPns.get(i).getKeyword()))
+ 			{
+ 				// 有該料號的資料
+ 				notRepeatPns.get(i).setSearchtype(1);
+ 				ArrayList<Product> products = returnMap.get(notRepeatPns.get(i).getKeyword());
+ 				
+ 				notRepeatPns.get(i).setPkey(products);
+ 			}
+ 			else
+			{
+				List<Product> sList = new ArrayList<>();
+				
+				notRepeatPns.get(i).setPkey(sList);
+			}
+ 		}
+ 		
+ 		
+ 		/*
+ 		// 先把所有料號給pm去搜尋
+ 		for (int i = 0; i < notRepeatPns.size(); i++) {
+ 			List<Product> pkey = new ArrayList<>();
+             String s = notRepeatPns.get(i).getKeyword();
+             
+             String pnkey = CommonUtil.parsePnKeyNoLike(s);
+  
+             pkey = getAllInforByPnMulti(pnkey);
+             
+             if(pkey.size() != 0)
+             	notRepeatPns.get(i).setSearchtype(1);
+             else
+             	notRepeatPns.get(i).setSearchtype(0);
+             
+             notRepeatPns.get(i).setPkey(pkey);
+         }
+ 	
+         */
+ 		
+ 		return notRepeatPns;
+ 	}
     
  // 20160112 多料號搜尋
     public List<Product> getProductByMultiRedis(String pn) {
