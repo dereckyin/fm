@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,9 @@ import com.gecpp.fm.Util.DbHelper.Site;
 import com.gecpp.p.product.domain.Mfs;
 
 public class OrderManagerModel {
+	
+	private static HashMap<Integer, Mfs> cachedMfs = null;
+	private static long cacheTime = System.currentTimeMillis();
 	
 	public static boolean IsRealPn(String pnKey) {
 		
@@ -176,51 +180,74 @@ public static List<String> getPnsByPnKey(String pnKey) {
 	
 	public static Mfs getMfsById(Integer id) {
 		
-		Mfs sList = new Mfs();
+		long nowDate = System.currentTimeMillis();
 		
-		String strSql = "SELECT id, name, description, logo, url, up_name, created_time, updated_time, advertise, priority  FROM pm_mfs_standard where id = " + id;
-	
-		try {
-
-			Connection conn = null;
-			Statement stmt = null;
-			ResultSet rs = null;
-
-			try {
-
-					conn = DbHelper.connectPm();
+		// 12個小時更換一次cache
+		if(nowDate - cacheTime > 12 * 60 * 60 * 1000)
+		{
+			cachedMfs = null;
+		}
+		
+		if (cachedMfs == null) {
+			cachedMfs = new HashMap<Integer, Mfs>();
+			cacheTime = nowDate;
+        }
+		
+		Mfs cached = cachedMfs.get(id);
+		
+		if(cached == null)
+		{
+			Mfs sList = new Mfs();
 			
+			String strSql = "SELECT id, name, description, logo, url, up_name, created_time, updated_time, advertise, priority  FROM pm_mfs_standard where id = " + id;
+		
+			try {
+	
+				Connection conn = null;
+				Statement stmt = null;
+				ResultSet rs = null;
+	
+				try {
+	
+						conn = DbHelper.connectPm();
 				
-				stmt = conn.createStatement();
-				rs = stmt.executeQuery(strSql);
-				while (rs.next())
-				{
-					sList.setId(rs.getInt(1));
-					sList.setName(rs.getString(2));
-					sList.setDescription(rs.getString(3));
-					sList.setLogo(rs.getString(4));
-					sList.setUrl(rs.getString(5));
-					sList.setUpName(rs.getString(6));
-					sList.setCreatedTime(rs.getDate(7));
-					sList.setUpdatedTime(rs.getDate(8));
-					sList.setAdvertise(rs.getString(9));
-					sList.setPriority(rs.getInt(10));
+					
+					stmt = conn.createStatement();
+					rs = stmt.executeQuery(strSql);
+					while (rs.next())
+					{
+						sList.setId(rs.getInt(1));
+						sList.setName(rs.getString(2));
+						sList.setDescription(rs.getString(3));
+						sList.setLogo(rs.getString(4));
+						sList.setUrl(rs.getString(5));
+						sList.setUpName(rs.getString(6));
+						sList.setCreatedTime(rs.getDate(7));
+						sList.setUpdatedTime(rs.getDate(8));
+						sList.setAdvertise(rs.getString(9));
+						sList.setPriority(rs.getInt(10));
+						
+					}
 					
 				}
-				
+	
+				finally {
+	
+					DbHelper.attemptClose(rs);
+					DbHelper.attemptClose(stmt);
+					DbHelper.attemptClose(conn);
+				}
+	
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-
-			finally {
-
-				DbHelper.attemptClose(rs);
-				DbHelper.attemptClose(stmt);
-				DbHelper.attemptClose(conn);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
+			
+			cachedMfs.put(id, sList);
+			
+			cached = sList;
 		}
-		return sList;
+		
+		return cached;
 
 	}
 	

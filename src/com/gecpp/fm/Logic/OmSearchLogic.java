@@ -1538,7 +1538,7 @@ public class OmSearchLogic {
 
 		confCount++;
 		
-		if(confCount == 100000)
+		if(confCount == 10000)
 		{
 			config = null;
 			supplierConfig = null;
