@@ -58,7 +58,7 @@
     	<env-entry-name>om.param.url</env-entry-name>
     	<env-entry-type>java.lang.String</env-entry-type>
     	<!-- <env-entry-value>jdbc:postgresql://192.168.3.42:5432/pm</env-entry-value> -->
-    	<env-entry-value>jdbc:postgresql://192.168.3.236:5433/pm</env-entry-value>
+    	<env-entry-value>jdbc:postgresql://192.168.3.221:6433/pm</env-entry-value>
 	</env-entry>
 	
 	<env-entry>

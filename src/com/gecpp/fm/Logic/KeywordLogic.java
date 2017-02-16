@@ -73,7 +73,7 @@ public class KeywordLogic {
 
 				try
 				{
-					pn = row.getString("pn");
+					pn = row.getString("pn").trim();
 				}
 				catch (Exception e)
 				{
@@ -82,7 +82,7 @@ public class KeywordLogic {
 				
 				try
 				{
-					mfs = row.getString("mfs");
+					mfs = row.getString("mfs").trim();
 				}
 				catch (Exception e)
 				{
@@ -91,7 +91,7 @@ public class KeywordLogic {
 				
 				try
 				{
-					pkg = row.getString("pkg");
+					pkg = row.getString("pkg").trim();
 				}
 				catch (Exception e)
 				{
