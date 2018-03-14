@@ -97,7 +97,7 @@ public class FuzzyManagerModel {
 		
 		String strSql;
 		
-		strSql = "select pn, weight from qeindexweight where pn in (" + pnSql + ") ";
+		strSql = "select pn, count from pn_weight where pn in (" + pnSql + ") ";
 		
 		Connection conn = null;
 		Statement stmt = null;
@@ -135,12 +135,12 @@ public class FuzzyManagerModel {
 		return hashPnWeight;
 	}
 	
-	public static List<IndexRate> GetAllIndexRate(String stoken, int order, int limitNumber)
+	public static List<IndexRate> GetEzIndexRate(String stoken, int order, int limitNumber)
 	{
 		String strSql;
 		
-		strSql = "select pn, weight, fullword, kind, page, " + order + " from qeindex where word = '"
-                + stoken.replace("'","''") + "' order by weight desc limit " + limitNumber;
+		strSql = "select word, 1 as weight, word, kind, unnest(page), " + order + " from ezindex_kind where word = '"
+                + stoken.replace("'","''") + "' limit 300 ";
 		
 		List<IndexRate> sList = new ArrayList<IndexRate>();
 		
@@ -160,6 +160,42 @@ public class FuzzyManagerModel {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+	
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			DbHelper.attemptClose(rs);
+			DbHelper.attemptClose(stmt);
+			DbHelper.attemptClose(conn);
+		}
+
+		return sList;
+	}
+	
+	public static List<IndexRate> GetAllIndexRate(String stoken, int order, int limitNumber)
+	{
+		String strSql;
+		
+		strSql = "select pn, (6 - kind) as weight, fullword, kind, page, " + order + " from qeindex where word = '"
+                + stoken.replace("'","''") + "' order by weight desc limit " + limitNumber;
+		
+		List<IndexRate> sList = new ArrayList<IndexRate>();
+		
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			conn = DbHelper.connectFm();
+		
+	
+				stmt = conn.createStatement();
+				rs = stmt.executeQuery(strSql);
+				while (rs.next())
+					sList.add(new IndexRate(rs.getString(1), rs.getFloat(2), rs.getString(3), rs.getInt(4), rs.getInt(5), rs.getInt(6)));
+				// System.out.println(rs.getString(0));
+		
 	
 		} catch (Exception e) {
 			e.printStackTrace();

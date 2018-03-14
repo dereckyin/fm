@@ -1,5 +1,6 @@
 package com.gecpp.fm.model;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -25,18 +26,26 @@ public class OrderManagerModel {
 	
 	public static boolean IsRealPn(String pnKey) {
 		
+		if("".equalsIgnoreCase(pnKey.trim()))
+			return false;
+		
+		DbHelper db = new DbHelper();
+		
 		List<String> sList = new ArrayList<>();
 
-		String strSql = "SELECT count(pn) FROM pm_product where pn = '" + pnKey.replace("'","''") + "' limit 20";
+		//String strSql = "SELECT pn FROM pm_product where pn like '" + pnKey.replace("'","''") + "%' limit 20";
+		String strSql = "select pn from auto_cache_pn where pn like '" + pnKey.replace("'","''") + "%' limit 10";
 		
-		sList = DbHelper.getList(strSql, Site.pm);
+		sList = db.getList(strSql, Site.fm);
 		
 		int nCount = 0;
 		if(sList.size() > 0)
 		{
 			try
 			{
-				nCount = Integer.parseInt(sList.get(0).trim());
+				for(String pn : sList)
+					if((CommonUtil.similarity(pn, pnKey) > 0.5) && pnKey.length() > 3)
+						nCount++;
 			}
 			catch (Exception e)
 			{
@@ -45,12 +54,56 @@ public class OrderManagerModel {
 			
 		}
 		
-		return nCount > 0 ? true: false;
+		// 20170929 是否有尚未加入cache的料號
+		strSql = "select pn from pm_product where pn = '" + pnKey.replace("'","''") + "' limit 10";
+		sList = db.getList(strSql, Site.pm);
+		
 
+		if(sList.size() > 0)
+			nCount = 1;
+	
+		return nCount > 0 ? true: false;
 	}
 	
 	public static boolean IsPn(String pnKey) {
+		/*
+		DbHelper db = new DbHelper();
 		
+		String strSql = "SELECT cast(A.NUM as float)/cast(A.DENOM as float) " +
+						" FROM " +
+						" ( " +
+						" SELECT  " +
+						"     (SELECT sum(count) " +
+						"         FROM ezindex_kind " +
+						"         WHERE word like '" + pnKey.replace("'","''") + "%' and kind = 0) " +
+						"         AS NUM, " +
+						"     (SELECT avg(count) " +
+						"         FROM ezindex_kind " +
+						"         WHERE word like '" + pnKey.replace("'","''") + "%') " +
+						"         AS DENOM " +
+						" )A";
+		
+		List<String> sList = new ArrayList<>();
+		sList = db.getList(strSql, Site.fm);
+		
+		float nCount = 0L;
+		if(sList.size() > 0)
+		{
+			try
+			{
+				nCount = Float.parseFloat(sList.get(0).trim());
+			}
+			catch (Exception e)
+			{
+				System.out.print(e.getMessage());
+			}
+			
+		}
+		*/
+		
+		return IsRealPn(pnKey);
+		
+		/*
 		// 20160304 放寬pn認定條件
 		if(pnKey.length() <= 3)
 		{
@@ -68,6 +121,9 @@ public class OrderManagerModel {
 		
 		pnKey = CommonUtil.parsePnKey(pnKey);
 		
+		
+		*/
+		
 		// 20160427 認定是否為pn放至最寬鬆
 		// 20160526 sky suggest not using pm_supplier_pn anymore
 		/*
@@ -75,6 +131,7 @@ public class OrderManagerModel {
 		+ " UNION (SELECT pn FROM pm_pn where pn_key like '" + pnKey + "' limit 20) ORDER BY pn limit 20";
 		*/
 
+		/*
 		String strSql = "SELECT count(pn) FROM pm_pn where pn_key like '" + pnKey + "' limit 20";
 		
 		sList = DbHelper.getList(strSql, Site.pm);
@@ -94,20 +151,59 @@ public class OrderManagerModel {
 		}
 		
 		return nCount > 0 ? true: false;
+		
+		*/
 
 	}
+
+public static List<String> getPnsByPnKey(String pnKey, String orgKey) {
+	
+	List<String> sList = null;
+	List<String> fmList = null;
+	List<String> fmOrg = null;
+	
+	DbHelper db = new DbHelper();
+	
+	pnKey = CommonUtil.parsePnKey(pnKey);
+	
+	String strSql = "(select pn from pm_supplier_pn where supplier_pn_key like '" + pnKey + "' limit 1) "
+	+ " UNION (SELECT pn FROM pm_pn where pn_key like '" + pnKey.replace("'","''") + "' limit 1) ORDER BY pn limit 1";
+
+	sList = db.getList(strSql, Site.pm);
+	
+	sList = CommonUtil.removeSpaceList(sList);
+	
+	// 20161103 改進查詢效能 semiconductors
+	fmOrg = getPnsByPnKeyFuzzy(orgKey + "%");
+	for (String x : fmOrg){
+		   if (!sList.contains(x))
+			   sList.add(x);
+		}
+	
+	
+	fmList = getPnsByPnKeyFuzzy(pnKey);
+	for (String x : fmList){
+		   if (!sList.contains(x) && sList.size() < 50)
+			   sList.add(x);
+		}
+
+	return sList;
+
+}
 	
 public static List<String> getPnsByPnKey(String pnKey) {
 		
 		List<String> sList = null;
 		List<String> fmList = null;
 		
+		DbHelper db = new DbHelper();
+		
 		pnKey = CommonUtil.parsePnKey(pnKey);
 		
-		String strSql = "(select pn from pm_supplier_pn where supplier_pn_key like '" + pnKey + "' limit 50) "
-		+ " UNION (SELECT pn FROM pm_pn where pn_key like '" + pnKey + "' limit 50) ORDER BY pn limit 50";
+		String strSql = "(select pn from pm_supplier_pn where supplier_pn_key like '" + pnKey + "' limit 1) "
+		+ " UNION (SELECT pn FROM pm_pn where pn_key like '" + pnKey.replace("'","''") + "' limit 1) ORDER BY pn limit 1";
 
-		sList = DbHelper.getList(strSql, Site.pm);
+		sList = db.getList(strSql, Site.pm);
 		
 		sList = CommonUtil.removeSpaceList(sList);
 		
@@ -125,21 +221,88 @@ public static List<String> getPnsByPnKey(String pnKey) {
 	
 	public static List<String> getPnsByPnKeyFuzzy(String pnKey) {
 		
-		List<String> sList = null;
+		List<String> sList = new ArrayList<String>(); 
 		
-		pnKey = CommonUtil.parsePnKey(pnKey);
+		DbHelper db = new DbHelper();
+	
+		//pnKey = CommonUtil.parsePnKey(pnKey);
 		
 		// 20161103 改進查詢效能 semiconductors
 		//String strSql = "select distinct word from qeindex where kind = 0 and word like  '" + pnKey + "' limit 100 ";
-		String strSql = "select word from qeindex where kind = 0 and word like  '" + pnKey + "' limit 20 ";
+		//String strSql = "select word from qeindex where kind = 0 and word like  '" + pnKey + "' limit 20 ";
+		String strSql = "select pn from pn_weight where pn like  '" + pnKey.replace("'","''") + "' order by count desc limit 40 ";
 
-		sList = DbHelper.getList(strSql, Site.fm);
+		sList = db.getList(strSql, Site.fm);
 		
 		sList = CommonUtil.removeSpaceList(sList);
+		
+		// 沒查到
+		if(sList.size() == 0)
+		{
+			strSql = "select pn from auto_cache_pn where pn like  '" + pnKey.replace("'","''") + "' limit 10 ";
+
+			sList = db.getList(strSql, Site.fm);
+			
+			sList = CommonUtil.removeSpaceList(sList);
+		}
 
 		return sList;
 
 	}
+	
+	public static List<Integer> getArrayIndex(String strSql){
+		
+		List<Integer> sList = new ArrayList<>();
+		
+		
+		
+		try {
+
+			Connection conn = null;
+			Statement stmt = null;
+			ResultSet rs = null;
+
+			try {
+
+				conn = DbHelper.connectFm();
+				
+				
+				stmt = conn.createStatement();
+				rs = stmt.executeQuery(strSql);
+				 
+				 
+				 while(rs.next()) { 
+					 Array page = rs.getArray(1);
+					 Integer[] intPage = (Integer[])page.getArray();
+					 
+					 for (int index = 0; index < intPage.length; index++)
+					 {
+						 sList.add(intPage[index]);
+					 }
+				 	}
+				
+			}
+
+			finally {
+
+				DbHelper.attemptClose(rs);
+				DbHelper.attemptClose(stmt);
+				DbHelper.attemptClose(conn);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sList;
+		
+		
+		
+
+	}
+		
+		
+		
+	
 	
 	public static List<IndexPrice> getPriceByProdcut(String strSql) {
 		

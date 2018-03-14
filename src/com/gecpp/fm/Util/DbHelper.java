@@ -264,7 +264,7 @@ public class DbHelper {
 	}
 	
 	
-	public static List<String> getList(String strSql, Site side ) {
+	public List<String> getList(String strSql, Site side ) {
 		
 		List<String> sList = new ArrayList<>();
 		

@@ -24,6 +24,10 @@ import com.gecpp.om.OrderManager;
 import redis.clients.jedis.Jedis;
 
 public class RedisSearchLogic {
+	
+	static final  boolean REDIS_BUILD = true;
+	
+	
 	/*
 	public static List<IndexResult> getRedisSearch(Keyword keyQuery)
 	{
@@ -89,50 +93,96 @@ public class RedisSearchLogic {
 		// 查詢結果限定筆數
 		int nCount = 0;
 		
-        Jedis jedis = new Jedis(JedisHelper.loadRedisServer(), 6379);
-        
-        List<IndexResult> rdResult = new ArrayList<IndexResult>();
-        
-        for(String pair:keywordPair)
-        {
-        	StringTokenizer st = new StringTokenizer(pair);
-        	int count = st.countTokens();
-        	
-        	pair = pair.trim();
-        	String [] tokenKeys = pair.split(" ");
-        	
-        	Set<String> setId = jedis.sinter(tokenKeys);
-        	
-        	// 同時增加次數與權重
-        	for(String id : setId)
-        	{
-        		int weight = 0;
-        		try
-        		{
-        			weight = Integer.parseInt(jedis.get("cn_" + id));
-        		}
-        		catch(Exception e)
-        		{}
-        		
-        		hashIndexCount.put(id, count);
-        		hashPnWeight.put(id, weight);
-        		
-        		
-        		nCount++;
-        	}
-        	
+		List<IndexResult> rdResult = new ArrayList<IndexResult>();
+		
+		if(REDIS_BUILD == false)
+		{
 
-    		rdResult.addAll(SortUtil.SortIndexResultSimple(hashPnWeight, count));
-    		
-    		hashIndexCount.clear();
-    		hashPnWeight.clear();
-        	
-        	// 先取800筆以上即可
-        	if(nCount > 800)
-        		break;
-        }
+	        
+	        for(String pair:keywordPair)
+	        {
+	        	StringTokenizer st = new StringTokenizer(pair);
+	        	int count = st.countTokens();
+	        	
+	        	pair = pair.trim();
+	        	String [] tokenKeys = pair.split(" ");
+	        	
+	        	//Set<String> setId = jedis.sinter(tokenKeys);
+	        	List<Integer> setId = OmSearchLogic.getArrayIndex(tokenKeys);
+	        	
+	        	// 同時增加次數與權重
+	        	for(Integer id : setId)
+	        	{
+	        		int weight = 0;
+	        
+	        		
+	        		hashIndexCount.put(id.toString(), count);
+	        		hashPnWeight.put(id.toString(), weight);
+	        		
+	        		
+	        		nCount++;
+	        	}
+	        	
+	
+	    		rdResult.addAll(SortUtil.SortIndexResultSimple(hashPnWeight, count));
+	    		
+	    		hashIndexCount.clear();
+	    		hashPnWeight.clear();
+	        	
+	        	// 先取800筆以上即可
+	        	if(nCount > 2000)
+	        		break;
+	        }
         
-        jedis.close();
+	        //jedis.close();
+		}
+		else
+		{
+			Jedis jedis = new Jedis(JedisHelper.loadRedisServer(), 6379);	// 3.221
+	        //Jedis jedis = new Jedis(JedisHelper.loadRedisServer(), 7379);	// 3.168
+		        
+	        
+	        for(String pair:keywordPair)
+	        {
+	        	StringTokenizer st = new StringTokenizer(pair);
+	        	int count = st.countTokens();
+	        	
+	        	pair = pair.trim();
+	        	String [] tokenKeys = pair.split(" ");
+	        	
+	        	Set<String> setId = jedis.sinter(tokenKeys);
+	        	
+	        	// 同時增加次數與權重
+	        	for(String id : setId)
+	        	{
+	        		int weight = 0;
+	        		try
+	        		{
+	        			weight = Integer.parseInt(jedis.get("cn_" + id));
+	        		}
+	        		catch(Exception e)
+	        		{}
+	        		
+	        		hashIndexCount.put(id, count);
+	        		hashPnWeight.put(id, weight);
+	        		
+	        		
+	        		nCount++;
+	        	}
+	        	
+
+	    		rdResult.addAll(SortUtil.SortIndexResultSimple(hashPnWeight, count));
+	    		
+	    		hashIndexCount.clear();
+	    		hashPnWeight.clear();
+	        	
+	        	// 先取800筆以上即可
+	        	if(nCount > 800)
+	        		break;
+	        }
+	        
+	        jedis.close();
+		}
 		
         
         return rdResult;
@@ -154,7 +204,8 @@ public class RedisSearchLogic {
 		// 查詢結果限定筆數
 		int nCount = 0;
 		
-        Jedis jedis = new Jedis(JedisHelper.loadRedisServer(), 6379);
+        Jedis jedis = new Jedis(JedisHelper.loadRedisServer(), 6379);	// 3.221
+        //Jedis jedis = new Jedis(JedisHelper.loadRedisServer(), 7379);	// 3.168
         
         List<IndexResult> rdResult = new ArrayList<IndexResult>();
         

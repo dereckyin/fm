@@ -1,9 +1,11 @@
 package com.gecpp.fm.Util;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +55,62 @@ public class CommonUtil {
 	    return isASCII;
 	}
 	
+	
+	public static String getElasticQueryString(String strInput)
+    {
+        String [] params = strInput.toUpperCase().split("\\s+");
+        Arrays.sort(params);
+
+        String paraStr = "";
+        for(String sr : params)
+            paraStr += sr + "+";
+
+        paraStr = paraStr.substring(0, paraStr.length() - 1);
+
+        return paraStr;
+    }
+	
+	private static double midArray(double[] arr) {
+	    int extra = arr.length % 2 == 0? 1 : 0;
+
+	    double[] a = new double[1 + extra];
+	    double ret = 0.0f;
+
+	    int startIndex = arr.length / 2 - extra;
+	    int endIndex = arr.length / 2;
+
+	    try
+	    {
+		    for (int i = 0; i <= endIndex - startIndex; i++) {
+		        a[i] = arr[startIndex + i];
+		    }
+		    
+		    ret = a[extra];
+	    }catch(Exception e){}
+
+	    return  ret;
+
+	}
+	
+	public static double getMedian(double[] values){
+		 Arrays.sort(values);
+		 double medianValue = midArray(values);
+		 
+		 if(medianValue == 0.0)
+		 {
+			 for(double p : values)
+			 {
+				 if(p > 0.0)
+				 {
+					 medianValue = p;
+					 break;
+				 }
+			 }
+		 }
+		 
+		 return medianValue;
+		}
+	
 	public static String parsePnKey(String pn) {
         String pnKey = pn;
 
@@ -97,6 +155,52 @@ public class CommonUtil {
 
         return pnKey;
     }
+	
+	public static double similarity(String s1, String s2) {
+        String longer = s1, shorter = s2;
+        if (s1.length() < s2.length()) { // longer should always have greater length
+            longer = s2; shorter = s1;
+        }
+        int longerLength = longer.length();
+        if (longerLength == 0) { return 1.0; /* both strings are zero length */ }
+        return (longerLength - editDistance(longer, shorter)) / (double) longerLength;
+    }
+	
+	protected static int editDistance(String s1, String s2) {
+        s1 = s1.toLowerCase();
+        s2 = s2.toLowerCase();
+
+        int[] costs = new int[s2.length() + 1];
+        for (int i = 0; i <= s1.length(); i++) {
+            int lastValue = i;
+            for (int j = 0; j <= s2.length(); j++) {
+                if (i == 0)
+                    costs[j] = j;
+                else {
+                    if (j > 0) {
+                        int newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) != s2.charAt(j - 1))
+                            newValue = Math.min(Math.min(newValue, lastValue),
+                                    costs[j]) + 1;
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+            }
+            if (i > 0)
+                costs[s2.length()] = lastValue;
+        }
+        return costs[s2.length()];
+    }
+	
+	public static boolean IsFileExist(String strPath)
+	{
+		File f = new File(strPath);
+		if(f.exists() && !f.isDirectory()) 
+		    return true;
+		else
+			return false;
+	}
 	
 	public static List<String> removeSpaceList(List<String> inList)
 	{
@@ -235,6 +339,18 @@ public class CommonUtil {
 		 }
 		 
 		 return true;
+	}
+	
+	public static List<String> convertListInteger2ListString(List<Integer> source)
+	{
+		List<String> retList = new ArrayList<String>();
+		
+		for(Integer iData: source)
+		{
+			String data = iData.toString();
+			retList.add(data);
+		}
+		return retList;
 	}
 	
 }

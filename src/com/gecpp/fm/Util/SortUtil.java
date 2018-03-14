@@ -80,6 +80,7 @@ public class SortUtil {
 		return returnMap;
 	}
 	
+	
 	// // 20160501 sort by mfs(by product)
 	public static LinkedHashMap<String, List<Product>> RegroupIndexResultByMfsProduct(LinkedHashMap<String, List<Product>> unsortMap)
 	{
@@ -146,6 +147,9 @@ public class SortUtil {
 	            	{
 	            		count++;
 	            	}
+	            	
+	            	if(item.getSupplier().getId() == 136)
+	            		count = 100;
 	            }
 				pnWeight.put(group_entry.getKey(), count);
 			}

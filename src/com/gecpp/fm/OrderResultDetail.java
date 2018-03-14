@@ -8,6 +8,7 @@ import java.util.Map;
 import com.gecpp.p.product.domain.Mfs;
 import com.gecpp.p.product.domain.Product;
 import com.gecpp.p.product.domain.Supplier;
+import com.gecpp.p.product.domain.Catalog;
 
 public class OrderResultDetail implements Serializable{
 	
@@ -89,6 +90,8 @@ public class OrderResultDetail implements Serializable{
      */
     private LinkedHashMap<String, Map<String, List<Product>>> productList;
     
+    private LinkedHashMap<String, Map<String, List<Integer>>> countList;
+    
     private List<String> mfsList;
 
     /**
@@ -110,6 +113,26 @@ public class OrderResultDetail implements Serializable{
     private List<Supplier> suppliers;
     
     
+    
+    private Map<Mfs, Integer> mfsStandard_count;			// 製造商含count
+
+    private Map<Supplier, Integer> suppliers_count;			// 供應商含count
+    
+    private List<String> currencies;						// 幣別
+    
+    private Map<String, Integer> status_count;		// (hasStock，noStock，hasPrice，hasInquery) 含count
+    
+    private Map<Catalog, Integer> catalogs_count;		// 分類ID 含count
+    
+    private Map<Catalog, Integer> middle_catalogs_count; // 中分類ID 含count
+    
+    private Map<Catalog, Integer> parent_catalogs_count; // 主分類ID 含count
+    
+    private LinkedHashMap<Catalog, Map<Catalog, Map<Catalog, Integer>>> catalogList;
+    
+    private LinkedHashMap<Mfs, Map<String, String>>  mfsPnDescription;
+    
+    private float rate;									// RATE
     
 
 	/**
@@ -194,6 +217,161 @@ public class OrderResultDetail implements Serializable{
 	 */
 	public void setProductList(LinkedHashMap<String, Map<String, List<Product>>> productList) {
 		this.productList = productList;
+	}
+
+
+	/**
+	 * @return the currencies
+	 */
+	public List<String> getCurrencies() {
+		return currencies;
+	}
+
+	/**
+	 * @param currencies the currencies to set
+	 */
+	public void setCurrencies(List<String> currencies) {
+		this.currencies = currencies;
+	}
+
+	/**
+	 * @return the mfsStandard_count
+	 */
+	public Map<Mfs, Integer> getMfsStandard_count() {
+		return mfsStandard_count;
+	}
+
+	/**
+	 * @param mfsStandard_count the mfsStandard_count to set
+	 */
+	public void setMfsStandard_count(Map<Mfs, Integer> mfsStandard_count) {
+		this.mfsStandard_count = mfsStandard_count;
+	}
+
+	/**
+	 * @return the suppliers_count
+	 */
+	public Map<Supplier, Integer> getSuppliers_count() {
+		return suppliers_count;
+	}
+
+	/**
+	 * @param suppliers_count the suppliers_count to set
+	 */
+	public void setSuppliers_count(Map<Supplier, Integer> suppliers_count) {
+		this.suppliers_count = suppliers_count;
+	}
+
+	/**
+	 * @return the status_count
+	 */
+	public Map<String, Integer> getStatus_count() {
+		return status_count;
+	}
+
+	/**
+	 * @param status_count the status_count to set
+	 */
+	public void setStatus_count(Map<String, Integer> status_count) {
+		this.status_count = status_count;
+	}
+
+	/**
+	 * @return the catalogs_count
+	 */
+	public Map<Catalog, Integer> getCatalogs_count() {
+		return catalogs_count;
+	}
+
+	/**
+	 * @param catalogs_count the catalogs_count to set
+	 */
+	public void setCatalogs_count(Map<Catalog, Integer> catalogs_count) {
+		this.catalogs_count = catalogs_count;
+	}
+
+	/**
+	 * @return the rate
+	 */
+	public float getRate() {
+		return rate;
+	}
+
+	/**
+	 * @param rate the rate to set
+	 */
+	public void setRate(float rate) {
+		this.rate = rate;
+	}
+
+	/**
+	 * @return the parent_catalogs_count
+	 */
+	public Map<Catalog, Integer> getParent_catalogs_count() {
+		return parent_catalogs_count;
+	}
+
+	/**
+	 * @param parent_catalogs_count the parent_catalogs_count to set
+	 */
+	public void setParent_catalogs_count(Map<Catalog, Integer> parent_catalogs_count) {
+		this.parent_catalogs_count = parent_catalogs_count;
+	}
+
+	/**
+	 * @return the middle_catalogs_count
+	 */
+	public Map<Catalog, Integer> getMiddle_catalogs_count() {
+		return middle_catalogs_count;
+	}
+
+	/**
+	 * @param middle_catalogs_count the middle_catalogs_count to set
+	 */
+	public void setMiddle_catalogs_count(Map<Catalog, Integer> middle_catalogs_count) {
+		this.middle_catalogs_count = middle_catalogs_count;
+	}
+
+	/**
+	 * @return the catalogList
+	 */
+	public LinkedHashMap<Catalog, Map<Catalog, Map<Catalog, Integer>>> getCatalogList() {
+		return catalogList;
+	}
+
+	/**
+	 * @param catalogList the catalogList to set
+	 */
+	public void setCatalogList(LinkedHashMap<Catalog, Map<Catalog, Map<Catalog, Integer>>> catalogList) {
+		this.catalogList = catalogList;
+	}
+
+	/**
+	 * @return the countList
+	 */
+	public LinkedHashMap<String, Map<String, List<Integer>>> getCountList() {
+		return countList;
+	}
+
+	/**
+	 * @param countList the countList to set
+	 */
+	public void setCountList(LinkedHashMap<String, Map<String, List<Integer>>> countList) {
+		this.countList = countList;
+	}
+
+	/**
+	 * @return the mfsPnDescription
+	 */
+	public LinkedHashMap<Mfs, Map<String, String>> getMfsPnDescription() {
+		return mfsPnDescription;
+	}
+
+	/**
+	 * @param mfsPnDescription the mfsPnDescription to set
+	 */
+	public void setMfsPnDescription(LinkedHashMap<Mfs, Map<String, String>> mfsPnDescription) {
+		this.mfsPnDescription = mfsPnDescription;
 	}
 
 }

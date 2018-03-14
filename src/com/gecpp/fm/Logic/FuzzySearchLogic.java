@@ -85,7 +85,8 @@ public class FuzzySearchLogic {
 		for (String stoken : keywordToken) {
 			order++;
 			//List<IndexRate> sIndexRate = FuzzyManagerModel.GetAllIndexRate(stoken, order, limitNumber);
-			List<IndexRate> sIndexRate = FuzzyManagerModel.GetAllIndexRate(stoken, order, nNumber);
+			//List<IndexRate> sIndexRate = FuzzyManagerModel.GetAllIndexRate(stoken, order, nNumber);
+			List<IndexRate> sIndexRate = FuzzyManagerModel.GetEzIndexRate(stoken, order, nNumber);
 		
 			// 先整理一次取出唯一的料號(順便加進料號與id對照)
 			Set<String> uniqueId = new HashSet<String>();

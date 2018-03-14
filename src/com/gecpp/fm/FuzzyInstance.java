@@ -1,6 +1,13 @@
 package com.gecpp.fm;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.Connection;
 
 import org.json.*;
@@ -14,8 +21,10 @@ import com.gecpp.fm.Dao.MultiKeyword;
 import com.gecpp.fm.Dao.Product;
 import com.gecpp.fm.Dao.Keyword.KeywordKind;
 import com.gecpp.fm.Dao.Keyword.NLP;
+import com.gecpp.fm.Dao.MfsAlternate;
 import com.gecpp.fm.Logic.FuzzySearchLogic;
 import com.gecpp.fm.Logic.KeywordLogic;
+import com.gecpp.fm.Logic.OmSearchLogic;
 import com.gecpp.fm.Logic.PmSearchLogic;
 import com.gecpp.fm.Logic.RedisSearchLogic;
 import com.gecpp.fm.Util.CommonUtil;
@@ -24,13 +33,17 @@ import com.gecpp.fm.Util.LogQueryHistory;
 import com.gecpp.fm.Util.SortUtil;
 import com.gecpp.fm.Util.StopWatch;
 import com.gecpp.fm.model.FuzzyManagerModel;
+import com.gecpp.fm.model.OrderManagerModel;
 import com.gecpp.om.OrderManager;
+import com.gecpp.p.product.domain.Mfs;
 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -52,6 +65,7 @@ import javax.naming.NamingException;
 
 import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
+import java.util.Date;
 
 class ValueComparator implements Comparator<String> {
 
@@ -891,6 +905,889 @@ public class FuzzyInstance {
 	}
     
     
+    /* 20170606 ------------------            新網頁 */
+    public OrderResultDetail QueryNewPageV1(String strData, 
+			int inventory, 
+			int lead, 
+			int rohs, 
+			List<Integer> mfs, 
+			List<Integer> abbreviation, 
+			List<String> pkg,
+			int hasStock,
+			int noStock,
+			int hasPrice,
+			int hasInquery,
+			int amount,					// 起訂量
+			List<String> currencies,	// 幣別
+			List<Integer> catalog_ids,	// 分類ID
+			int currentPage, 
+			int pageSize)
+	{
+        // 回傳值
+        OrderResultDetail result = null;
+     
+        // 用何種方式搜索
+        int nSearchType = 0;
+        
+        String strUntaged = "";
+        String strTaged = "";
+        
+     // if cached_mfs
+        List<IndexRate> cachedPnsMfs = KeywordLogic.getCacheMfs(strData);
+        if(cachedPnsMfs.size() > 0)
+        {
+        	Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
+        	
+        	// 加亮
+            String strHighLight = "";
+            for(String stoken:keyQuery.getKeyword())
+            {
+            	strHighLight += stoken + ",";
+            }
+            // Log 紀錄
+            LogQueryHistory.InsertQueryLog(keyQuery, currentPage);
+  
+            List<String> recordPns = new ArrayList<String>();
+            
+            // for Pns Record
+            int count = 0;
+            for(IndexRate res : cachedPnsMfs)
+            {
+            	recordPns.add(res.getPn());
+            	count++;
+            	
+            	if(count > 200)
+            		break;
+            }
+
+            // 計時
+            StopWatch watch = new StopWatch("PmSearch");
+
+            	
+            watch.getElapseTime(keyQuery, recordPns);
+
+            int nTotalCount = 0;
+
+        
+            watch = new StopWatch("OrderManager");
+            
+            OrderManager om = new OrderManager();
+           
+            result = om.QueryNewPageMfsV1(inventory, lead, rohs, mfs, abbreviation, cachedPnsMfs, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids);
+            	
+            watch.getElapseTimeOrderResult(keyQuery, recordPns);
+
+            // 去除逗號
+            strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+            //result.setHighLight(strHighLight);
+            
+
+            return result;
+        }
+        
+        // if cached
+        List<IndexResult> cachedPns = KeywordLogic.getCache(strData);
+        if(cachedPns.size() > 0)
+        {
+        	Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
+        	
+        	// 加亮
+            String strHighLight = "";
+            for(String stoken:keyQuery.getKeyword())
+            {
+            	strHighLight += stoken + ",";
+            }
+            // Log 紀錄
+            LogQueryHistory.InsertQueryLog(keyQuery, currentPage);
+  
+            List<String> recordPns = new ArrayList<String>();
+            
+            // for Pns Record
+            int count = 0;
+            for(IndexResult res : cachedPns)
+            {
+            	recordPns.add(res.getPn());
+            	count++;
+            	
+            	if(count > 200)
+            		break;
+            }
+
+            // 計時
+            StopWatch watch = new StopWatch("PmSearch");
+
+            	
+            watch.getElapseTime(keyQuery, recordPns);
+
+            int nTotalCount = 0;
+
+        
+            watch = new StopWatch("OrderManager");
+            
+            OrderManager om = new OrderManager();
+           
+            result = om.QueryNewPageMfsV1(inventory, lead, rohs, mfs, abbreviation, cachedPnsMfs, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids);
+            	
+            watch.getElapseTimeOrderResult(keyQuery, recordPns);
+
+            // 去除逗號
+            strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+            //result.setHighLight(strHighLight);
+            
+            return result;
+        }
+        
+        // 分類搜尋
+        if("".equals(strData) && catalog_ids != null && catalog_ids.size() > 0)
+        {
+        
+        	List<String> catalogPns = OmSearchLogic.Catalog(catalog_ids);
+        	List<IndexRate> aRet = new ArrayList<IndexRate>();
+        	
+        	// for Pns Record
+            int count = 0;
+            for(String res : catalogPns)
+            {
+            	IndexRate ir = new IndexRate(res, 0, res, 0, 0,  1);
+			
+				aRet.add(ir);
+				
+            	count++;
+            	
+            	if(count > 200)
+            		break;
+            }
+        	
+        	OrderManager om = new OrderManager();
+
+        	result = om.QueryNewPageCatalogV1(inventory, lead, rohs, mfs, abbreviation, aRet, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids);
+            
+      
+            // 去除逗號
+            //result.setHighLight(strHighLight);
+            
+            return result;
+        }
+	
+	 // 取出製造商
+        List<String> core_mfs = new ArrayList<String>();
+	    MfsAlternate retAlter = KeywordLogic.ExtractMfsName(strData, core_mfs, abbreviation);
+	
+	    strUntaged = retAlter.getStrData().trim();
+	
+		strTaged = retAlter.getTagData().trim();
+	    
+	    
+	    //abbreviation = retAlter.getSupplier();
+	    
+	    // 分析輸入的查詢
+	    Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData, strUntaged, strTaged, retAlter.getMfs(), retAlter.getSupplier());
+	    // 加亮
+	    String strHighLight = "";
+	    for(String stoken:keyQuery.getKeyword())
+	    {
+	    	strHighLight += stoken + ",";
+	    }
+	    // Log 紀錄
+	    LogQueryHistory.InsertQueryLog(keyQuery, currentPage);
+	    
+	    // 純料號的結果
+	    List<String> pnList = new ArrayList<String>();
+	    // Redis的結果
+	    List<IndexResult> redisResult = new ArrayList<IndexResult>();
+	    // Fuzzy的結果
+	    List<IndexResult> fuzzyResult = new ArrayList<IndexResult>();
+	    
+	    // 料號排序的結果
+	    List<IndexResult> sortedIndexResult = null;
+	    
+	    // 如果輸入的查詢有問題，回傳空的結果
+	    if(keyQuery.getCount()== 0)
+	    {
+	    	result = new OrderResultDetail();
+	    	result.setTotalCount(0);
+	    	result.setPns(new String[0]);
+	    	//result.setPkg(new String[0]);
+	    	//result.setSupplier(new String[0]);
+	    	return result;
+	    }
+	    
+	    // 純料號的方式
+	    boolean bSearchPn = false;
+	    List<KeywordKind> kinds = keyQuery.getKind();
+	    for(KeywordKind kind : kinds)
+	    {
+	    	if(kind.equals(KeywordKind.IsPn))
+	    		bSearchPn = true;
+	    }
+	
+	    if (bSearchPn == true) {
+	    	// 計時
+	    	StopWatch watch = new StopWatch("PmSearch");
+	    	
+	    	pnList = PmSearchLogic.PmSearch(keyQuery);
+	    
+	    	// 
+	    	//core_mfs = retAlter.getMfs();
+	    	
+	    	// 為了修正從pm_pn中找不到的問題
+	    	if(!pnList.contains(strUntaged.toUpperCase()))
+	    		pnList.add(strUntaged.toUpperCase());
+	    	
+	    	// 20160223 料號預先排序應該只限於排序料號
+	    	HashMap<String, Integer> hashPnWeight = FuzzyManagerModel.OrderPn(pnList);
+			sortedIndexResult = SortUtil.SortIndexResultSimple(hashPnWeight, 0);
+	    	
+	    	watch.getElapseTime(keyQuery, pnList);
+	    	
+	    	nSearchType = 1;
+	    }
+	    
+	    if (bSearchPn == false) // Redis的交集
+	    {
+	    	StopWatch watch = new StopWatch("RedisSearch");
+	    	
+	    	try
+	    	{
+	    		redisResult = RedisSearchLogic.getRedisSearchId(keyQuery);
+	    	}
+	    	catch(Exception e)
+	    	{
+	    		List<String> sErr = new ArrayList<String>();
+	    		sErr.add(e.getMessage());
+	    		watch.getElapseTime(keyQuery, sErr);
+	    	}
+	    	watch.getElapseTimeIndexResult(keyQuery, redisResult);
+	    	
+	    }
+	    
+	 // 20160223 for more percisely pn search
+	    if(pnList.size() == 0)
+	    {
+	        // 不夠的再由FuzzySearch補充
+	        if(pnList.size() + redisResult.size() < 50)
+	        {
+	        	StopWatch watch = new StopWatch("FuzzySearch");
+	        	if(nSearchType == 1)	// 以純料號搜尋
+	        		fuzzyResult = FuzzySearchLogic.getFuzzySearch(keyQuery);
+	        	else
+	        	{
+	        		fuzzyResult = FuzzySearchLogic.getFuzzySearchId(keyQuery);
+	        		// reorder 
+	        		//redisResult = SortUtil.RegroupIndexResult(redisResult, fuzzyResult);
+	        		// 直接加在下面
+	        		redisResult.addAll(fuzzyResult);
+	        	}
+	        	
+	        	watch.getElapseTimeIndexResult(keyQuery, fuzzyResult);
+	        }
+	    }
+	    
+	    
+	    
+	    // 利用hash排除重複
+	    Map<String, Integer> uniqPn = new HashMap<String, Integer>();
+	    // 交給排序模組
+	    List<String> OmList = new ArrayList<String>();
+	  
+	    int nTotalCount = 0;
+	    
+	    if(nSearchType == 1) // search by pm and/or fuzzy
+	    {
+	    	// 最後整理出的唯一料號表
+	        List<String> sPnReturn = new ArrayList<String>();
+	        
+	        // 純料號的先
+	        for(IndexResult res : sortedIndexResult)
+	        {
+	        	uniqPn.put(res.getPn(), 1);
+	        	sPnReturn.add(res.getPn());
+	        }
+	        //sPnReturn.addAll(pnList);
+	        
+	        // FuzzySearch
+	        for(IndexResult tuple : fuzzyResult)
+	        {
+	        	if(!uniqPn.containsKey(tuple.getPn()))
+	        	{
+	        		uniqPn.put(tuple.getPn(), 1);
+	        		sPnReturn.add(tuple.getPn());
+	        	}
+	        }
+	      
+	        
+	        OmList.addAll(sPnReturn);
+	        
+	    }
+	    else
+	    {
+	    	List<String> pageList = new ArrayList<String> ();
+	    	Map<Integer, List<String>> pageMap = new HashMap<Integer, List<String>>();
+	    	
+	    	int nCount = 0;
+	
+	    	for(IndexResult tuple : redisResult)
+	    	{
+	    		OmList.add(tuple.getPn());
+	    		
+	    		nCount++;
+	    		
+	    		// 先取500筆以上即可
+	        	if(nCount > 1000)
+	        		break;
+	    	}
+	    	
+	    }
+	
+	    StopWatch watch = new StopWatch("OrderManager");
+	    
+	    OrderManager om = new OrderManager();
+
+	    if(nSearchType == 1)
+	    	result = om.QueryNewPageV1(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs);
+	    else
+	    	result = om.QueryNewPageIdV1(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids);
+	  
+	    watch.getElapseTimeOrderResult(keyQuery, OmList);
+	
+	    // 去除逗號
+	    strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+	    //result.setHighLight(strHighLight);
+	    
+	    if(retAlter.getMfs().size() > 0)
+	    {
+	    	List<Mfs> returnMfs = new ArrayList<Mfs>();
+	    	for(Integer id : retAlter.getMfs())
+	    	{
+	    		for (Mfs mfsinstance : result.getMfsStandard()) {      
+	            	// mfs
+	    			if(mfsinstance.getId().equals(id))
+	                {
+	                	returnMfs.add(mfsinstance);
+	                }
+	            }
+	        }
+	    
+	    	if(returnMfs.size() > 0)
+	    		result.setMfsStandard(returnMfs);
+	    }
+	
+	    return result;
+	}
+    
+    public String sendGet(String url) {
+
+        StringBuffer response = new StringBuffer();
+        try {
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+            // optional default is GET
+            con.setRequestMethod("GET");
+
+            //add request header
+
+            con.setRequestProperty("Authorization", "myAuthorizationProp");
+
+            int responseCode = 0;
+
+            responseCode = con.getResponseCode();
+            
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = new Date();
+
+            System.out.println("\n" + dateFormat.format(date) + " Sending 'GET' request to URL : " + url);
+            System.out.println("Response Code : " + responseCode);
+            
+            if(responseCode != 200)
+            	return "";
+            
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return response.toString();
+    }
+    
+private List<String> ElasticQuery(String query){
+    	
+    	String strJson = "";
+		try {
+			strJson = sendGet("http://192.168.3.221:9200" + "/_search/?q=" + "\"" + URLEncoder.encode(query, "UTF-8") + "\"" + "&_source_include=pn&size=200&from=0");
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+        List<String> idArray = new ArrayList<String>();
+
+        JSONArray hitsArray = null;
+        JSONObject hits = null;
+        JSONObject source = null;
+        JSONObject json = null;
+
+        try
+        {
+        	if("".equalsIgnoreCase(strJson))
+				return idArray;
+	        json = new JSONObject(strJson);
+	        hits = json.getJSONObject("hits");
+	        hitsArray = hits.getJSONArray("hits");
+	
+	        for (int i=0; i<hitsArray.length(); i++) {
+	            JSONObject h = hitsArray.getJSONObject(i);
+	            source = h.getJSONObject("_source");
+	            String object = (source.getString("pn"));
+	            idArray.add(object);
+	        }
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
+
+        if(idArray.size() == 0){
+    		try {
+    				strJson = sendGet("http://192.168.3.221:9200" + "/_search/?q=" + CommonUtil.getElasticQueryString(query).replaceAll("/", "//") + "&_source_include=pn&size=200&from=0");
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+    		
+    		try
+            {
+    			if("".equalsIgnoreCase(strJson))
+    				return idArray;
+    	        json = new JSONObject(strJson);
+    	        hits = json.getJSONObject("hits");
+    	        hitsArray = hits.getJSONArray("hits");
+    	
+    	        for (int i=0; i<hitsArray.length(); i++) {
+    	            JSONObject h = hitsArray.getJSONObject(i);
+    	            source = h.getJSONObject("_source");
+    	            String object = (source.getString("pn"));
+    	            idArray.add(object);
+    	        }
+            }
+            catch(Exception e)
+            {
+            	e.printStackTrace();
+            }
+		}
+        
+        return idArray;
+    }
+    
+    
+    /* 20170726 ------------------            新網頁 */
+    public OrderResultDetail QueryNewPageV2(String strData, 
+			int inventory, 
+			int lead, 
+			int rohs, 
+			List<Integer> mfs, 
+			List<Integer> abbreviation, 
+			List<String> pkg,
+			int hasStock,
+			int noStock,
+			int hasPrice,
+			int hasInquery,
+			int amount,					// 起訂量
+			List<String> currencies,	// 幣別
+			List<Integer> catalog_ids,	// 分類ID
+			int isLogin,				// 是否登入
+			int isPaid,					// 是否付費
+			int currentPage, 
+			int pageSize)
+	{
+        // 回傳值
+        OrderResultDetail result = null;
+     
+        // 用何種方式搜索
+        int nSearchType = 0;
+        
+        String strUntaged = "";
+        String strTaged = "";
+        
+     // if cached_mfs
+        List<IndexRate> cachedPnsMfs = KeywordLogic.getCacheMfs(strData);
+        if(cachedPnsMfs.size() > 0)
+        {
+        	Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
+        	
+        	// 加亮
+            String strHighLight = "";
+            for(String stoken:keyQuery.getKeyword())
+            {
+            	strHighLight += stoken + ",";
+            }
+            // Log 紀錄
+            LogQueryHistory.InsertQueryLog(keyQuery, currentPage);
+  
+            List<String> recordPns = new ArrayList<String>();
+            
+            // for Pns Record
+            int count = 0;
+            for(IndexRate res : cachedPnsMfs)
+            {
+            	recordPns.add(res.getPn());
+            	count++;
+            	
+            	if(count > 500)
+            		break;
+            }
+
+            // 計時
+            StopWatch watch = new StopWatch("PmSearch");
+
+            	
+            watch.getElapseTime(keyQuery, recordPns);
+
+            int nTotalCount = 0;
+
+        
+            watch = new StopWatch("OrderManager");
+            
+            OrderManager om = new OrderManager();
+           
+            result = om.QueryNewPageMfsV2(inventory, lead, rohs, mfs, abbreviation, cachedPnsMfs, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+            	
+            watch.getElapseTimeOrderResult(keyQuery, recordPns);
+
+            // 去除逗號
+            strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+            //result.setHighLight(strHighLight);
+            
+
+            return result;
+        }
+        
+        
+        // if cached
+        List<IndexResult> cachedPns = KeywordLogic.getCache(strData);
+        if(cachedPns.size() > 0)
+        {
+        	Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
+        	
+        	// 加亮
+            String strHighLight = "";
+            for(String stoken:keyQuery.getKeyword())
+            {
+            	strHighLight += stoken + ",";
+            }
+            // Log 紀錄
+            LogQueryHistory.InsertQueryLog(keyQuery, currentPage);
+  
+            List<IndexRate> recordPns = new ArrayList<IndexRate>();
+            
+            // for Pns Record
+            int count = 0;
+            for(IndexResult res : cachedPns)
+            {
+            	IndexRate rate = new IndexRate(res.getPn(), 0, "", 0, 0, 0);
+            	
+            	recordPns.add(rate);
+            	count++;
+            	
+            	if(count > 500)
+            		break;
+            }
+
+            // 計時
+            StopWatch watch = new StopWatch("PmSearch");
+
+            	
+            //watch.getElapseTime(keyQuery, recordPns);
+
+            int nTotalCount = 0;
+
+        
+            watch = new StopWatch("OrderManager");
+            
+            OrderManager om = new OrderManager();
+           
+            result = om.QueryNewPageMfsV2(inventory, lead, rohs, mfs, abbreviation, recordPns, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+            	
+            //watch.getElapseTimeOrderResult(keyQuery, recordPns);
+
+            // 去除逗號
+            strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+            //result.setHighLight(strHighLight);
+            
+            return result;
+        }
+        
+        // 分類搜尋
+        if("".equals(strData) && catalog_ids != null && catalog_ids.size() > 0)
+        {
+        
+        	List<String> catalogPns = OmSearchLogic.Catalog(catalog_ids);
+        	List<IndexRate> aRet = new ArrayList<IndexRate>();
+        	
+        	// for Pns Record
+            int count = 0;
+            for(String res : catalogPns)
+            {
+            	IndexRate ir = new IndexRate(res, 0, res, 0, 0,  1);
+			
+				aRet.add(ir);
+				
+            	count++;
+            	
+            	if(count > 200)
+            		break;
+            }
+        	
+        	OrderManager om = new OrderManager();
+
+        	result = om.QueryNewPageCatalogV2(inventory, lead, rohs, mfs, abbreviation, aRet, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+            
+      
+            // 去除逗號
+            //result.setHighLight(strHighLight);
+            
+            return result;
+        }
+	
+	 // 取出製造商
+        List<String> core_mfs = new ArrayList<String>();
+	    MfsAlternate retAlter = KeywordLogic.ExtractMfsName(strData, core_mfs, abbreviation);
+	
+	    strUntaged = retAlter.getStrData().trim();
+	
+		strTaged = retAlter.getTagData().trim();
+	    
+	    
+	    //abbreviation = retAlter.getSupplier();
+	    
+	    // 分析輸入的查詢
+	    Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData, strUntaged, strTaged, retAlter.getMfs(), retAlter.getSupplier());
+	    // 加亮
+	    String strHighLight = "";
+	    for(String stoken:keyQuery.getKeyword())
+	    {
+	    	strHighLight += stoken + ",";
+	    }
+	    // Log 紀錄
+	    LogQueryHistory.InsertQueryLog(keyQuery, currentPage);
+	    
+	    // 純料號的結果
+	    List<String> pnList = new ArrayList<String>();
+	    // Redis的結果
+	    List<IndexResult> redisResult = new ArrayList<IndexResult>();
+	    // Fuzzy的結果
+	    List<IndexResult> fuzzyResult = new ArrayList<IndexResult>();
+	    
+	    // 料號排序的結果
+	    List<IndexResult> sortedIndexResult = null;
+	    
+	    // 如果輸入的查詢有問題，回傳空的結果
+	    if(keyQuery.getCount()== 0)
+	    {
+	    	result = new OrderResultDetail();
+	    	result.setTotalCount(0);
+	    	result.setPns(new String[0]);
+	    	//result.setPkg(new String[0]);
+	    	//result.setSupplier(new String[0]);
+	    	return result;
+	    }
+	    
+	    // 純料號的方式
+	    boolean bSearchPn = false;
+	    List<KeywordKind> kinds = keyQuery.getKind();
+	    for(KeywordKind kind : kinds)
+	    {
+	    	if(kind.equals(KeywordKind.IsPn))
+	    		bSearchPn = true;
+	    }
+	    if(kinds.size() > 3)
+	    	bSearchPn = false;
+	
+	    if (bSearchPn == true) {
+	    	// 計時
+	    	StopWatch watch = new StopWatch("PmSearch");
+	    	
+	    	pnList = PmSearchLogic.PmSearch(keyQuery);
+	    
+	    	// 
+	    	//core_mfs = retAlter.getMfs();
+	    	
+	    	// 為了修正從pm_pn中找不到的問題
+	    	if(!pnList.contains(strUntaged))
+	    		pnList.add(strUntaged);
+	    	
+	    	// 20160223 料號預先排序應該只限於排序料號
+	    	HashMap<String, Integer> hashPnWeight = FuzzyManagerModel.OrderPn(pnList);
+			sortedIndexResult = SortUtil.SortIndexResultSimple(hashPnWeight, 0);
+	    	
+	    	watch.getElapseTime(keyQuery, pnList);
+	    	
+	    	nSearchType = 1;
+	    }
+	    
+	    if (bSearchPn == false) // Redis的交集
+	    {
+	    	StopWatch watch = new StopWatch("RedisSearch");
+	    	
+	    	try
+	    	{
+	    		redisResult = RedisSearchLogic.getRedisSearchId(keyQuery);
+	    	}
+	    	catch(Exception e)
+	    	{
+	    		List<String> sErr = new ArrayList<String>();
+	    		sErr.add(e.getMessage());
+	    		watch.getElapseTime(keyQuery, sErr);
+	    	}
+	    	watch.getElapseTimeIndexResult(keyQuery, redisResult);
+	    	
+	    }
+	    
+	 // 20160223 for more percisely pn search
+	    if(pnList.size() == 0)
+	    {
+	        // 不夠的再由FuzzySearch補充
+	        if(pnList.size() + redisResult.size() < 50)
+	        {
+	        	StopWatch watch = new StopWatch("FuzzySearch");
+	        	if(nSearchType == 1)	// 以純料號搜尋
+	        		fuzzyResult = FuzzySearchLogic.getFuzzySearch(keyQuery);
+	        	else
+	        	{
+	        		fuzzyResult = FuzzySearchLogic.getFuzzySearchId(keyQuery);
+	        		// reorder 
+	        		//redisResult = SortUtil.RegroupIndexResult(redisResult, fuzzyResult);
+	        		// 直接加在下面
+	        		redisResult.addAll(fuzzyResult);
+	        	}
+	        	
+	        	watch.getElapseTimeIndexResult(keyQuery, fuzzyResult);
+	        }
+	    }
+	    
+	    
+	    
+	    // 利用hash排除重複
+	    Map<String, Integer> uniqPn = new HashMap<String, Integer>();
+	    // 交給排序模組
+	    List<String> OmList = new ArrayList<String>();
+	  
+	    int nTotalCount = 0;
+	    
+	    if(nSearchType == 1) // search by pm and/or fuzzy
+	    {
+	    	// 最後整理出的唯一料號表
+	        List<String> sPnReturn = new ArrayList<String>();
+	        
+	        // 純料號的先
+	        for(IndexResult res : sortedIndexResult)
+	        {
+	        	uniqPn.put(res.getPn(), 1);
+	        	sPnReturn.add(res.getPn());
+	        }
+	        //sPnReturn.addAll(pnList);
+	        
+	        // FuzzySearch
+	        for(IndexResult tuple : fuzzyResult)
+	        {
+	        	if(!uniqPn.containsKey(tuple.getPn()))
+	        	{
+	        		uniqPn.put(tuple.getPn(), 1);
+	        		sPnReturn.add(tuple.getPn());
+	        	}
+	        }
+	      
+	        
+	        OmList.addAll(sPnReturn);
+	        
+	    }
+	    else
+	    {
+	    	List<String> pageList = new ArrayList<String> ();
+	    	Map<Integer, List<String>> pageMap = new HashMap<Integer, List<String>>();
+	    	
+	    	int nCount = 0;
+	
+	    	for(IndexResult tuple : redisResult)
+	    	{
+	    		OmList.add(tuple.getPn());
+	    		
+	    		nCount++;
+	    		
+	    		// 先取500筆以上即可
+	        	if(nCount > 1000)
+	        		break;
+	    	}
+	    	
+	    }
+	
+	    StopWatch watch = new StopWatch("OrderManager");
+	    
+	    OrderManager om = new OrderManager();
+
+	    if(nSearchType == 1)
+	    	result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
+	    else
+	    	result = om.QueryNewPageIdV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+	    
+	    // 用 elasticSearch
+	    if(result.getTotalCount() == 0)
+	    {
+	    	List<String> eIndex = ElasticQuery(strData);
+	    	
+	    	if(eIndex.size() == 0)
+	    		return result;
+	    	
+		    List<String> OmList1 = new ArrayList<String>();
+		  
+		    Set<String> uniqueGas = new HashSet<String>(eIndex);
+		    OmList1.addAll(uniqueGas);
+		        
+		    core_mfs.clear();
+		    
+	    	if(OmList1.size() > 0)
+	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, OmList1, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
+	    }
+	    	
+	  
+	    watch.getElapseTimeOrderResult(keyQuery, OmList);
+	
+	    // 去除逗號
+	    strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+	    //result.setHighLight(strHighLight);
+	    
+	    if(retAlter.getMfs().size() > 0)
+	    {
+	    	List<Mfs> returnMfs = new ArrayList<Mfs>();
+	    	for(Integer id : retAlter.getMfs())
+	    	{
+	    		for (Mfs mfsinstance : result.getMfsStandard()) {      
+	            	// mfs
+	    			if(mfsinstance.getId().equals(id))
+	                {
+	                	returnMfs.add(mfsinstance);
+	                }
+	            }
+	        }
+	    
+	    	if(returnMfs.size() > 0)
+	    		result.setMfsStandard(returnMfs);
+	    }
+	
+	    return result;
+	}
+	    
+    
     /* 20160706 ------------------            詳情頁深度搜尋 */
     public OrderResultDetail QueryFuzzyRecordByDeptSearchDetail(String strData, 
 			int inventory, 
@@ -912,8 +1809,127 @@ public class FuzzyInstance {
         // 用何種方式搜索
         int nSearchType = 0;
         
+        String strUntaged = "";
+        String strTaged = "";
+        
+     // if cached_mfs
+        List<IndexRate> cachedPnsMfs = KeywordLogic.getCacheMfs(strData);
+        if(cachedPnsMfs.size() > 0)
+        {
+        	Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
+        	
+        	// 加亮
+            String strHighLight = "";
+            for(String stoken:keyQuery.getKeyword())
+            {
+            	strHighLight += stoken + ",";
+            }
+            // Log 紀錄
+            LogQueryHistory.InsertQueryLog(keyQuery, currentPage);
+  
+            List<String> recordPns = new ArrayList<String>();
+            
+            // for Pns Record
+            int count = 0;
+            for(IndexRate res : cachedPnsMfs)
+            {
+            	recordPns.add(res.getPn());
+            	count++;
+            	
+            	if(count > 200)
+            		break;
+            }
+
+            // 計時
+            StopWatch watch = new StopWatch("PmSearch");
+
+            	
+            watch.getElapseTime(keyQuery, recordPns);
+
+            int nTotalCount = 0;
+
+        
+            watch = new StopWatch("OrderManager");
+            
+            OrderManager om = new OrderManager();
+           
+            result = om.getProductByGroupInStoreDeepDetailNewPagingMfs(inventory, lead, rohs, mfs, abbreviation, cachedPnsMfs, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize);
+            	
+            watch.getElapseTimeOrderResult(keyQuery, recordPns);
+
+            // 去除逗號
+            strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+            //result.setHighLight(strHighLight);
+            
+
+            return result;
+        }
+        
+        // if cached
+        List<IndexResult> cachedPns = KeywordLogic.getCache(strData);
+        if(cachedPns.size() > 0)
+        {
+        	Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
+        	
+        	// 加亮
+            String strHighLight = "";
+            for(String stoken:keyQuery.getKeyword())
+            {
+            	strHighLight += stoken + ",";
+            }
+            // Log 紀錄
+            LogQueryHistory.InsertQueryLog(keyQuery, currentPage);
+  
+            List<String> recordPns = new ArrayList<String>();
+            
+            // for Pns Record
+            int count = 0;
+            for(IndexResult res : cachedPns)
+            {
+            	recordPns.add(res.getPn());
+            	count++;
+            	
+            	if(count > 200)
+            		break;
+            }
+
+            // 計時
+            StopWatch watch = new StopWatch("PmSearch");
+
+            	
+            watch.getElapseTime(keyQuery, recordPns);
+
+            int nTotalCount = 0;
+
+        
+            watch = new StopWatch("OrderManager");
+            
+            OrderManager om = new OrderManager();
+           
+            result = om.getProductByGroupInStoreDeepDetailNewPaging(inventory, lead, rohs, mfs, abbreviation, cachedPns, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize);
+            	
+            watch.getElapseTimeOrderResult(keyQuery, recordPns);
+
+            // 去除逗號
+            strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+            //result.setHighLight(strHighLight);
+            
+
+            return result;
+        }
+        
+        // 取出製造商
+        MfsAlternate retAlter = KeywordLogic.ExtractMfs(strData, mfs, abbreviation);
+  
+        strUntaged = retAlter.getStrData().trim();
+   
+    	strTaged = retAlter.getTagData().trim();
+        
+        
+        //abbreviation = retAlter.getSupplier();
+        
         // 分析輸入的查詢
-        Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
+        Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData, strUntaged, strTaged, retAlter.getMfs(), retAlter.getSupplier());
         // 加亮
         String strHighLight = "";
         for(String stoken:keyQuery.getKeyword())
@@ -945,15 +1961,26 @@ public class FuzzyInstance {
         }
         
         // 純料號的方式
-        if (keyQuery.getCount() == 1 && keyQuery.getKind().get(0).equals(KeywordKind.IsPn)) {
+        boolean bSearchPn = false;
+        List<KeywordKind> kinds = keyQuery.getKind();
+        for(KeywordKind kind : kinds)
+        {
+        	if(kind.equals(KeywordKind.IsPn))
+        		bSearchPn = true;
+        }
+
+        if (bSearchPn == true) {
         	// 計時
         	StopWatch watch = new StopWatch("PmSearch");
         	
         	pnList = PmSearchLogic.PmSearch(keyQuery);
+        
+        	// 
+        	mfs = retAlter.getMfs();
         	
         	// 為了修正從pm_pn中找不到的問題
-        	if(!pnList.contains(strData.toUpperCase()))
-        		pnList.add(strData.toUpperCase());
+        	if(!pnList.contains(strUntaged.toUpperCase()))
+        		pnList.add(strUntaged.toUpperCase());
         	
         	// 20160223 料號預先排序應該只限於排序料號
         	HashMap<String, Integer> hashPnWeight = FuzzyManagerModel.OrderPn(pnList);
@@ -964,7 +1991,7 @@ public class FuzzyInstance {
         	nSearchType = 1;
         }
         
-        if (keyQuery.getCount() > 1) // Redis的交集
+        if (bSearchPn == false) // Redis的交集
         {
         	StopWatch watch = new StopWatch("RedisSearch");
         	
@@ -1054,7 +2081,7 @@ public class FuzzyInstance {
         		nCount++;
         		
         		// 先取500筆以上即可
-            	if(nCount > 500)
+            	if(nCount > 1000)
             		break;
         	}
         	
@@ -1065,7 +2092,7 @@ public class FuzzyInstance {
         OrderManager om = new OrderManager();
         if(nSearchType == 1)	// 以純料號搜尋
         {
-        	result = om.getProductByGroupInStoreDeepDetail(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize);
+        	result = om.getProductByGroupInStoreDeepDetail(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, sortedIndexResult);
         	if(result.getTotalCount() == 0)
         		return QueryFuzzyRecordByDeptSearchDetailAgain(strData, inventory, lead, rohs, mfs, abbreviation, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize);
         }
@@ -1078,7 +2105,23 @@ public class FuzzyInstance {
         strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
         //result.setHighLight(strHighLight);
         
+        if(retAlter.getMfs().size() > 0)
+        {
+        	List<Mfs> returnMfs = new ArrayList<Mfs>();
+        	for(Integer id : retAlter.getMfs())
+        	{
+        		for (Mfs mfsinstance : result.getMfsStandard()) {      
+                	// mfs
+        			if(mfsinstance.getId().equals(id))
+                    {
+                    	returnMfs.add(mfsinstance);
+                    }
+                }
+            }
         
+        	if(returnMfs.size() > 0)
+        		result.setMfsStandard(returnMfs);
+        }
 
         return result;
 	}
@@ -1239,7 +2282,7 @@ public class FuzzyInstance {
         
         OrderManager om = new OrderManager();
         if(nSearchType == 1)	// 以純料號搜尋
-        	result = om.getProductByGroupInStoreDeepDetail(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize);
+        	result = om.getProductByGroupInStoreDeepDetail(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, sortedIndexResult);
         else
         	result = om.getProductByGroupInStoreIdDeepDetail(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize);
         
@@ -2840,5 +3883,16 @@ public class FuzzyInstance {
         result = om.formatFromMultiKeyword(keyQuery);
         
 		return result;
+	}
+
+
+
+	public ProcurementSet02 Procurement02(String strData, List<Integer> mfs_ids, int amount, int isLogin, int isPaid) {
+		// TODO Auto-generated method stub
+		OrderManager om = new OrderManager();
+		
+		ProcurementSet02 pro = om.Procurement02(strData, mfs_ids, amount, isLogin, isPaid);
+		
+		return pro;
 	}
 }

@@ -3,18 +3,18 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="lib" path="C:/Users/dereck/Dropbox/qegoo/fm/WebContent/WEB-INF/lib/com.springsource.org.json-1.0.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/dereckyin/Dropbox/qegoo/fm/WebContent/WEB-INF/lib/com.springsource.org.json-1.0.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-lang3-3.4.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jedis-2.7.3.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/pm-skeleton-2.1.68.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/framework-base-4.0.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jackson-all-1.9.5.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v8.0">
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/pm-skeleton-2.1.84.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v8.0 (2)">
 		<attributes>
 			<attribute name="owner.project.facets" value="jst.web"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_161">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
