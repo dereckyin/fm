@@ -362,7 +362,7 @@ public static List<String> getPnsByPnKey(String pnKey) {
 		{
 			Mfs sList = new Mfs();
 			
-			String strSql = "SELECT id, name, description, logo, url, up_name, created_time, updated_time, advertise, priority  FROM pm_mfs_standard where id = " + id;
+			String strSql = "SELECT id, name, cooperation description, logo, url, up_name, created_time, updated_time, advertise, priority  FROM pm_mfs_standard where id = " + id;
 		
 			try {
 	

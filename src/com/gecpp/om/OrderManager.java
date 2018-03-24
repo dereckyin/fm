@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -85,6 +86,7 @@ public class OrderManager {
 	
 	private List<Mfs> m_returnMfs = null;
 	private List<Supplier> m_returnSupplier = null;
+	private Map<Mfs, List<String>> m_mfsPnDescription = null;
 	
 	private Map<Mfs, Integer> mfsStandard_count;			// 製造商含count
     private Map<Supplier, Integer> suppliers_count;			// 供應商含count
@@ -491,6 +493,9 @@ public class OrderManager {
 		m_returnMfs = getMfsListDetail(plist);
 		m_returnSupplier = getSupplierListDetail(plist);
 		
+		// 2018/03/14
+		m_mfsPnDescription = GetMfsPnDescription(plist);
+		
 		// 20170615
 		mfsStandard_count = getMfsListDetailCount(plist);
 		suppliers_count = getSupplierListDetailCount(plist);
@@ -567,6 +572,9 @@ public class OrderManager {
         result = orderProductListDetail(result);
         //result.setTotalCount(OmSearchLogic.pageCountDetail(plist));
         result.setTotalCount(notRepeatPns.size());
+        
+        // 2018/03/14
+        result.setMfsPnDescription(m_mfsPnDescription);
 
 		return result;
     }
@@ -818,6 +826,9 @@ public class OrderManager {
 		m_returnMfs = getMfsListDetail(plist);
 		m_returnSupplier = getSupplierListDetail(plist);
 		
+		// 2018/03/14
+		m_mfsPnDescription = GetMfsPnDescription(plist);
+		
 		// 20170615
 		mfsStandard_count = getMfsListDetailCount(plist);
 		suppliers_count = getSupplierListDetailCount(plist);
@@ -911,6 +922,9 @@ public class OrderManager {
         
         //result.setTotalCount(OmSearchLogic.pageCountDetail(plist));
         result.setTotalCount(notRepeatPns.size());
+        
+     // 2018/03/14
+        result.setMfsPnDescription(m_mfsPnDescription);
 
 		return result;
     }
@@ -1286,6 +1300,9 @@ public class OrderManager {
 		m_returnMfs = getMfsListDetail(plist);
 		m_returnSupplier = getSupplierListDetail(plist);
 		
+		// 2018/03/14
+		m_mfsPnDescription = GetMfsPnDescription(plist);
+		
 		// 20170615
 		mfsStandard_count = getMfsListDetailCount(plist);
 		suppliers_count = getSupplierListDetailCount(plist);
@@ -1354,7 +1371,8 @@ public class OrderManager {
         result.setTotalCount(OmSearchLogic.pageCountDetail(plist));
         //result.setTotalCount(notRepeatPns.size());
         
-        
+     // 2018/03/14
+        result.setMfsPnDescription(m_mfsPnDescription);
 
 		return result;
     }
@@ -1432,6 +1450,9 @@ public class OrderManager {
 		m_returnMfs = getMfsListDetail(plist);
 		m_returnSupplier = getSupplierListDetail(plist);
 		
+		// 2018/03/14
+		m_mfsPnDescription = GetMfsPnDescription(plist);
+		
 		// 20170615
 		mfsStandard_count = getMfsListDetailCount(plist);
 		suppliers_count = getSupplierListDetailCount(plist);
@@ -1506,6 +1527,9 @@ public class OrderManager {
         result = orderProductListDetail(result);
         result.setTotalCount(OmSearchLogic.pageCountDetail(plist));
         //result.setTotalCount(notRepeatPns.size());
+        
+     // 2018/03/14
+        result.setMfsPnDescription(m_mfsPnDescription);
 
 		return result;
     }
@@ -4403,14 +4427,20 @@ private List<com.gecpp.p.product.domain.Product> dealWithWebPListRepeatDetail(Li
         return returnMfs;
     }
 	
-	private LinkedHashMap<Mfs, Map<String, String>> GetMfsPnDescription(List<com.gecpp.p.product.domain.Product> plist)
+	
+	// 2018/03/14  搜索结果页返回数据需要额外再返回一组包含合作制造商的数据（制造商名称、制造商型号、描述）
+	// add new Structure Mfs, Pn, Description
+	private Map<Mfs, List<String>> GetMfsPnDescription(List<com.gecpp.p.product.domain.Product> plist)
 	{
-		LinkedHashMap<Mfs, Map<String, String>> mfsPnDescription = new LinkedHashMap<Mfs, Map<String, String>>();
+		Map<Mfs, List<String>> mfsPnDescription = new HashMap<Mfs, List<String>>();
 		Set<Integer> idMfs = new HashSet<Integer>();
 		
 		for (com.gecpp.p.product.domain.Product pro : plist) {
 
 			Mfs mfs = OrderManagerModel.getMfsById(pro.getMfsId());
+			
+			if(!"1".equalsIgnoreCase(mfs.getDescription()))
+				continue;
 			
         	// mfs
             if(!idMfs.contains(pro.getMfsId()))
@@ -4419,31 +4449,37 @@ private List<com.gecpp.p.product.domain.Product> dealWithWebPListRepeatDetail(Li
             	
             	if(mfs.getName() != null)
             	{
-            		// element
-            		Map<String, String> pnDescription = new HashMap<String, String>();
-            		pnDescription.put(pro.getPn(), pro.getDescription());
+           
+            		// list
+            		List<String> lstPnDescription = new ArrayList<String>();
+            		lstPnDescription.add(pro.getPn());
             		
-            		mfsPnDescription.put(mfs, pnDescription);
+            		mfsPnDescription.put(mfs, lstPnDescription);
             	}
             }
             else
             {
-            	for (Map.Entry<Mfs, Map<String, String>> entry : mfsPnDescription.entrySet())
+            	for (Map.Entry<Mfs, List<String>> entry : mfsPnDescription.entrySet())
             	{
             		// 找到相關的mfs
             	    if(entry.getKey().getName().equalsIgnoreCase(mfs.getName()))
             	    {
-            	    	Map<String, String> pnDescription = entry.getValue();
+            	    	List<String> lstPnDescription = entry.getValue();
             	    	
-            	    	// 無相關的資訊
-            	    	if(!pnDescription.containsKey(pro.getPn()))
+            	    	// search for if pn contains
+            	    	boolean found = false;
+            	    	for(String pnDesc : lstPnDescription)
             	    	{
-            	    		// element
-                    		Map<String, String> pnDescri = new HashMap<String, String>();
-                    		pnDescri.put(pro.getPn(), pro.getDescription());
-                    		
-                    		mfsPnDescription.put(mfs, pnDescription);
+            	    		if(pnDesc.equalsIgnoreCase(pro.getPn()))
+            	    			found = true;
             	    	}
+            	    	
+            	    	if(!found)
+            	    	{
+                    		lstPnDescription.add(pro.getPn());
+                    		
+            	    	}
+            	    	
             	    }
             	}
             }

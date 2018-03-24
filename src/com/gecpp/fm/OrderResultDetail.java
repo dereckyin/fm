@@ -130,7 +130,7 @@ public class OrderResultDetail implements Serializable{
     
     private LinkedHashMap<Catalog, Map<Catalog, Map<Catalog, Integer>>> catalogList;
     
-    private LinkedHashMap<Mfs, Map<String, String>>  mfsPnDescription;
+    private Map<Mfs, List<String>>  mfsPnDescription;	// 2018/03/14 Map<製造商, List<PN>>  mfsPnDescription;
     
     private float rate;									// RATE
     
@@ -363,15 +363,17 @@ public class OrderResultDetail implements Serializable{
 	/**
 	 * @return the mfsPnDescription
 	 */
-	public LinkedHashMap<Mfs, Map<String, String>> getMfsPnDescription() {
+	public Map<Mfs, List<String>> getMfsPnDescription() {
 		return mfsPnDescription;
 	}
 
 	/**
 	 * @param mfsPnDescription the mfsPnDescription to set
 	 */
-	public void setMfsPnDescription(LinkedHashMap<Mfs, Map<String, String>> mfsPnDescription) {
+	public void setMfsPnDescription(Map<Mfs, List<String>> mfsPnDescription) {
 		this.mfsPnDescription = mfsPnDescription;
 	}
 
+
+	
 }

@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import com.gecpp.fm.Dao.*;
+import com.gecpp.fm.model.FuzzyManagerModel;
+import com.gecpp.p.product.domain.Catalog;
 
 
 public class SortUtil {
@@ -269,6 +271,33 @@ public class SortUtil {
 		return retList;
     }
     
-    
+    public static List<IndexRate> SortPnByCount(List<String> pnCount)
+    {
+    	// 20160223 料號預先排序應該只限於排序料號
+    	HashMap<String, Integer> hashPnWeight = new HashMap<String, Integer>();
+    	for(String pn : pnCount)
+    	{
+    		Integer value = hashPnWeight.get(pn);
+    		
+    		if(value == null)
+    			hashPnWeight.put(pn, 1);
+    		else
+    			hashPnWeight.put(pn, value + 1);
+    	}
+    	
+    	List<IndexResult> sortedIndexResult = SortUtil.SortIndexResultSimple(hashPnWeight, 0);
+    	
+    	List<IndexRate> recordPns = new ArrayList<IndexRate>();
+    	
+    	for(IndexResult res : sortedIndexResult)
+        {
+        	IndexRate rate = new IndexRate(res.getPn(), 0, "", 0, 0, 0);
+        	
+        	recordPns.add(rate);
+
+        }
+    	
+    	return recordPns;
+    }
 }
 

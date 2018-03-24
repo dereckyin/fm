@@ -1303,7 +1303,7 @@ public class FuzzyInstance {
             	return "";
             
             BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
+                    new InputStreamReader(con.getInputStream(), "UTF-8"));
             String inputLine;
 
 
@@ -1324,7 +1324,7 @@ private List<String> ElasticQuery(String query){
     	
     	String strJson = "";
 		try {
-			strJson = sendGet("http://192.168.3.221:9200" + "/_search/?q=" + "\"" + URLEncoder.encode(query, "UTF-8") + "\"" + "&_source_include=pn&size=200&from=0");
+			strJson = sendGet("http://192.168.3.221:9200" + "/_search/?q=" + "\"" + URLEncoder.encode(query, "UTF-8") + "\"" + "&_source_include=pn&size=1000&from=0");
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -1359,7 +1359,7 @@ private List<String> ElasticQuery(String query){
 
         if(idArray.size() == 0){
     		try {
-    				strJson = sendGet("http://192.168.3.221:9200" + "/_search/?q=" + CommonUtil.getElasticQueryString(query).replaceAll("/", "//") + "&_source_include=pn&size=200&from=0");
+    				strJson = sendGet("http://192.168.3.221:9200" + "/_search/?q=" + CommonUtil.getElasticQueryString(query).replaceAll("/", "//") + "&_source_include=pn&size=1000&from=0");
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -1418,6 +1418,10 @@ private List<String> ElasticQuery(String query){
         
         String strUntaged = "";
         String strTaged = "";
+        
+        // 2018/03/23 for special TE
+        if("TE".equalsIgnoreCase(strData.trim()))
+        	strData = "TE CONNECTIVITY";
         
      // if cached_mfs
         List<IndexRate> cachedPnsMfs = KeywordLogic.getCacheMfs(strData);
@@ -1664,11 +1668,12 @@ private List<String> ElasticQuery(String query){
 	        		fuzzyResult = FuzzySearchLogic.getFuzzySearch(keyQuery);
 	        	else
 	        	{
-	        		fuzzyResult = FuzzySearchLogic.getFuzzySearchId(keyQuery);
+	        		// 废止 fuzzy search
+	        		//fuzzyResult = FuzzySearchLogic.getFuzzySearchId(keyQuery);
 	        		// reorder 
 	        		//redisResult = SortUtil.RegroupIndexResult(redisResult, fuzzyResult);
 	        		// 直接加在下面
-	        		redisResult.addAll(fuzzyResult);
+	        		//redisResult.addAll(fuzzyResult);
 	        	}
 	        	
 	        	watch.getElapseTimeIndexResult(keyQuery, fuzzyResult);
@@ -1752,11 +1757,12 @@ private List<String> ElasticQuery(String query){
 		  
 		    Set<String> uniqueGas = new HashSet<String>(eIndex);
 		    OmList1.addAll(uniqueGas);
-		        
-		    core_mfs.clear();
 		    
+		    // sort pn
+		    List<IndexRate> recordPns = SortUtil.SortPnByCount(OmList1);
+		 
 	    	if(OmList1.size() > 0)
-	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, OmList1, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
+	    		result = om.QueryNewPageMfsV2(inventory, lead, rohs, mfs, abbreviation, recordPns, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
 	    }
 	    	
 	  

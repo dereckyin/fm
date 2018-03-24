@@ -25,6 +25,8 @@ import com.gecpp.fm.Dao.Keyword.NLP;
 import com.gecpp.fm.Dao.MfsAlternate;
 import com.gecpp.fm.Dao.MfsAlternateDao;
 import com.gecpp.fm.Dao.MultiKeyword;
+import com.gecpp.fm.Dao.StandardCatalogAlternate;
+import com.gecpp.fm.Dao.StandardCatalogDao;
 import com.gecpp.fm.Util.CommonUtil;
 import com.gecpp.fm.Util.DbHelper;
 import com.gecpp.fm.Util.DbHelper.Site;
@@ -42,6 +44,7 @@ public class KeywordLogic {
 	private static String[] SkipWord = null;
 	
 	private static ArrayList<MfsAlternateDao> cachedMfs = null;
+	private static ArrayList<StandardCatalogDao> cachedCatalog = null;
 	private static long cacheTime = System.currentTimeMillis();
 	
 	
@@ -90,6 +93,65 @@ public class KeywordLogic {
     	retAlter.setSupplier(supplier);
     	retAlter.setTagData(tagData);
     	retAlter.setTagMfs(tagMfs);
+    	
+    	return retAlter;
+    }
+	
+	public static StandardCatalogAlternate ExtractCatalogName(String strData, List<Integer> catalog)
+    {
+		refreshCatalog();
+		refreshMfsAlternate();
+		
+		String tagData = "";
+		List<String> tagCatalog = new ArrayList<String>();
+		List<Integer> tagCatalogId = new ArrayList<Integer>();
+		List<Integer> mfsId = new ArrayList<Integer>();
+		
+		if(catalog == null)
+			catalog = new ArrayList<Integer>();
+		
+		// get catalog
+		for(StandardCatalogDao dao : cachedCatalog)
+    	{
+            String patternString = "(?<!\\S)" + dao.getChinese_name().toUpperCase() + "(?!\\S)";
+            Pattern pattern = Pattern.compile(patternString);
+            Matcher matcher = pattern.matcher(strData.toUpperCase());
+
+            while (matcher.find()) {
+            	
+    			catalog.add(dao.getCatalog_id());
+    			tagCatalog.add(dao.getChinese_name());
+    			
+    			strData = strData.toUpperCase().replaceAll("(?<!\\S)" + dao.getChinese_name().toUpperCase() + "(?!\\S)", "");
+    			
+    			tagData += "|||3" + dao.getChinese_name().toUpperCase() + "|||" + " ";
+            }
+            
+    	}
+		
+		// get mfs
+		for(MfsAlternateDao dao : cachedMfs)
+    	{
+
+            String patternString = "(?<!\\S)" + dao.getName().toUpperCase() + "(?!\\S)";
+            Pattern pattern = Pattern.compile(patternString);
+            Matcher matcher = pattern.matcher(strData.toUpperCase());
+
+            while (matcher.find()) {
+    			mfsId.add(dao.getId());
+    			strData = strData.toUpperCase().replaceAll("(?<!\\S)" + dao.getName().toUpperCase() + "(?!\\S)", "");
+    	
+            }
+            
+    	}
+    	
+		StandardCatalogAlternate retAlter = new StandardCatalogAlternate();
+    	
+    	retAlter.setStrData(strData);
+    	retAlter.setCatalog(catalog);
+    	retAlter.setTagCatalog(tagCatalog);
+    	retAlter.setTagData(tagData);
+    	retAlter.setMfs(mfsId);
     	
     	return retAlter;
     }
@@ -180,6 +242,85 @@ public class KeywordLogic {
 				IndexResult res = new IndexResult();
 				res.setPn(rs.getString(1));
 				res.setCount(rs.getInt(2));
+				aRet.add(res);
+			}
+			
+
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+		}
+		finally {
+			attemptClose(rs);
+			attemptClose(pst);
+			attemptClose(conn);
+		}
+
+		return aRet;
+	}
+	
+	public static List<IndexRate> getCacheMfsCatalog(String sInput)
+	{
+		List<IndexRate> aRet = new ArrayList<IndexRate>();
+		
+		List<String> core_mfs = new ArrayList<String>();
+		List<Integer> abbreviation = new ArrayList<Integer>();
+		boolean bFound = false;
+		
+		StandardCatalogAlternate retAlter = null;
+		String strAlter = "";
+		Integer nCatalogId = 0;
+			
+		// for ti, recom
+		String newInput = "";
+		String [] sTerms = sInput.split(" ");
+		for(String term : sTerms)
+		{
+			retAlter = KeywordLogic.ExtractCatalogName(term, abbreviation);
+			if(retAlter.getCatalog().size() > 0)
+			{
+				if(!sInput.toUpperCase().contains(retAlter.getTagCatalog().get(0)))
+					newInput += retAlter.getTagCatalog().get(0) + " ";
+				else
+					newInput += term + " ";
+				
+				strAlter = retAlter.getTagCatalog().get(0);
+				nCatalogId = retAlter.getCatalog().get(0);
+				
+				bFound = true;
+			}
+			else
+				newInput += term + " ";
+		}
+		
+		sInput = newInput.trim();
+
+	    if(!bFound)
+	    	return aRet;
+	    
+	    if(sInput.length() > strAlter.length())
+	    	return aRet;
+
+		PreparedStatement pst = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		
+		if(core_mfs.size() == 0)
+			return aRet;
+
+		String strSql = "select pn, '" + strAlter + "', count from ez_mfs_count where id = ? order by count desc limit 500";
+		try
+		{
+			conn = DbHelper.connectFm();
+			pst = conn.prepareStatement(strSql);
+			pst.setLong(1, 0L);
+
+			rs = pst.executeQuery();
+
+			while (rs.next()) {
+				IndexRate res = new IndexRate(rs.getString(1), 0, rs.getString(2), 0, 0, rs.getInt(3));
+				
 				aRet.add(res);
 			}
 			
@@ -291,6 +432,65 @@ public class KeywordLogic {
         long nMd5 = getHash(paraStr);
         
         return nMd5;
+	}
+	
+private static void refreshCatalog() {
+		
+		long nowDate = System.currentTimeMillis();
+		
+		// 12個小時更換一次cache
+		if(nowDate - cacheTime > 12 * 60 * 60 * 1000)
+		{
+			cachedCatalog = null;
+		}
+		
+		if(cachedCatalog == null)
+		{
+			cachedCatalog = new ArrayList<StandardCatalogDao>();
+			cacheTime = nowDate;
+			
+			String strSql = "select catalog_id, chinese_name from  pm_standar_catalog order by length(chinese_name) desc";
+		
+			try {
+	
+				Connection conn = null;
+				Statement stmt = null;
+				ResultSet rs = null;
+	
+				try {
+	
+						conn = DbHelper.connectPm();
+				
+					
+					stmt = conn.createStatement();
+					rs = stmt.executeQuery(strSql);
+					while (rs.next())
+					{
+						StandardCatalogDao dao = new StandardCatalogDao();
+						dao.setCatalog_id(rs.getInt(1));
+						dao.setChinese_name(rs.getString(2));
+						
+						cachedCatalog.add(dao);
+					}
+					
+				}
+	
+				finally {
+	
+					DbHelper.attemptClose(rs);
+					DbHelper.attemptClose(stmt);
+					DbHelper.attemptClose(conn);
+				}
+	
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			
+
+		}
+		
+
 	}
 	
 	private static void refreshMfsAlternate() {

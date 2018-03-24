@@ -58,7 +58,7 @@
     	<env-entry-name>om.param.url</env-entry-name>
     	<env-entry-type>java.lang.String</env-entry-type>
     	<!-- <env-entry-value>jdbc:postgresql://192.168.3.42:5432/pm</env-entry-value> -->
-    	<env-entry-value>jdbc:postgresql://192.168.3.236:5432/pm</env-entry-value>
+    	<env-entry-value>jdbc:postgresql://192.168.3.221:5433/pm</env-entry-value>
 	</env-entry>
 	
 	<env-entry>
@@ -86,22 +86,22 @@
 	<env-entry>
     	<env-entry-name>fm.param.url.debug</env-entry-name>
     	<env-entry-type>java.lang.String</env-entry-type>
-    	<!-- <env-entry-value>jdbc:postgresql://192.168.3.221:5432/qeindex</env-entry-value> -->
-    	<env-entry-value>jdbc:postgresql://192.168.1.106:5432/qeindex</env-entry-value>
+    	<env-entry-value>jdbc:postgresql://192.168.3.221:5432/qeindex</env-entry-value>
+    	<!-- <env-entry-value>jdbc:postgresql://192.168.1.106:5432/qeindex</env-entry-value> -->
 	</env-entry>
 	
 	<env-entry>
     	<env-entry-name>fm.param.user.debug</env-entry-name>
     	<env-entry-type>java.lang.String</env-entry-type>
-    	<!-- <env-entry-value>fm_reader</env-entry-value> -->
-    	<env-entry-value>postgres</env-entry-value>
+    	<env-entry-value>fm_reader</env-entry-value>
+    	<!-- <env-entry-value>postgres</env-entry-value> -->
 	</env-entry>
 
 	<env-entry>
     	<env-entry-name>fm.param.pwd.debug</env-entry-name>
     	<env-entry-type>java.lang.String</env-entry-type>
-    	<!-- <env-entry-value>fm_reader</env-entry-value> -->
-    	<env-entry-value>2xxiiill</env-entry-value>
+    	<env-entry-value>fm_reader</env-entry-value>
+    	<!-- <env-entry-value>2xxiiill</env-entry-value> -->
 	</env-entry>
 	
 	<env-entry>
@@ -113,22 +113,22 @@
 	<env-entry>
     	<env-entry-name>om.param.url.debug</env-entry-name>
     	<env-entry-type>java.lang.String</env-entry-type>
-    	<!-- <env-entry-value>jdbc:postgresql://192.168.3.221:5433/pm</env-entry-value> -->
-    	<env-entry-value>jdbc:postgresql://192.168.1.106:5432/pm</env-entry-value>
+    	<env-entry-value>jdbc:postgresql://192.168.3.221:5433/pm</env-entry-value>
+    	<!-- <env-entry-value>jdbc:postgresql://192.168.1.106:5432/pm</env-entry-value> -->
 	</env-entry>
 	
 	<env-entry>
     	<env-entry-name>om.param.user.debug</env-entry-name>
     	<env-entry-type>java.lang.String</env-entry-type>
-    	<!-- <env-entry-value>pm_reader</env-entry-value> -->
-    	<env-entry-value>postgres</env-entry-value>
+    	<env-entry-value>pm_reader</env-entry-value>
+    	<!-- <env-entry-value>postgres</env-entry-value> -->
 	</env-entry>
 
 	<env-entry>
     	<env-entry-name>om.param.pwd.debug</env-entry-name>
     	<env-entry-type>java.lang.String</env-entry-type>
-    	<!-- <env-entry-value>pm_reader</env-entry-value> -->
-    	<env-entry-value>2xxiiill</env-entry-value>
+    	<env-entry-value>pm_reader</env-entry-value>
+    	<!-- <env-entry-value>2xxiiill</env-entry-value> -->
 	</env-entry>
 
 
