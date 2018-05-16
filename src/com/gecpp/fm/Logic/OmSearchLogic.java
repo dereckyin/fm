@@ -55,6 +55,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import dev.xwolf.framework.common.json.JSONUtils;
 import dev.xwolf.framework.common.util.StringUtils;
+import me.xdrop.fuzzywuzzy.FuzzySearch;
+import me.xdrop.fuzzywuzzy.model.ExtractedResult;
 
 public class OmSearchLogic {
 	
@@ -602,6 +604,48 @@ public class OmSearchLogic {
         }
 
         return pnSql;
+	}
+	
+	private static List<String> maxSplit(String formula)
+	{
+		String bestFit = "";
+		List<String> retResult = new ArrayList<String>();
+		
+		//insert "1" in atom-atom boundry 
+		//formula = formula.replaceAll("(?<=[A-Z])(?=[A-Z])|(?<=[a-z])(?=[A-Z])|(?<=\\D)$", "1");
+
+		//split at letter-digit or digit-letter boundry
+		String regex = "(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)";
+		String[] atoms = formula.split(regex);
+		
+		for(String atom : atoms)
+		{
+			bestFit += atom;
+			List<String> result = getFuzzyPn(bestFit, 10);
+			if(result.size() == 0)
+				break;
+			else
+				retResult = result;
+		}
+		
+		return retResult;
+	}
+	
+	public static List<String> getFuzzyPns(String strData)
+	{
+		List<String> result = maxSplit(strData);
+		
+		if(result.size() == 0)
+			result= getFuzzyPn(strData.substring(0, 1), 100);
+				
+		List<ExtractedResult> pns =  FuzzySearch.extractTop(strData, result, 10);
+		
+		List<String> retPn = new ArrayList<String>();
+		
+		for(ExtractedResult res : pns)
+			retPn.add(res.getString());
+		
+		return retPn;
 	}
 	
 	public static String getFormatPnPageMfs(List<IndexRate> notRepeatPns, int page, int pagesize)
@@ -3821,6 +3865,47 @@ public class OmSearchLogic {
 		return sList;
     }
 	
+
+
+
+private static List<String> getFuzzyPn(String alphabat, int limit) {
+		
+		String strSql = "select pn from auto_cache_pn where pn like ? limit ? ";
+
+		List<String> sList = new ArrayList<>();
+		
+		Connection conn = null;
+		PreparedStatement  pstmt = null;
+		ResultSet rs = null;
+
+		try {
+
+			conn = DbHelper.connectFm();
+
+				
+				pstmt = conn.prepareStatement(strSql);
+				pstmt.setString(1, alphabat + '%');
+				pstmt.setInt(2, limit);
+				
+				rs = pstmt.executeQuery();
+
+				while (rs.next())
+					sList.add(rs.getString(1));
+	
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+
+			DbHelper.attemptClose(rs);
+			DbHelper.attemptClose(pstmt);
+			DbHelper.attemptClose(conn);
+		}
+		
+
+		return sList;
+    }
 	
 private static List<Integer> sortCatalog(List<Integer> catalogId, int limit) {
 		

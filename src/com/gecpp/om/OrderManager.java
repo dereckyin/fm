@@ -494,7 +494,11 @@ public class OrderManager {
 		m_returnSupplier = getSupplierListDetail(plist);
 		
 		// 2018/03/14
-		m_mfsPnDescription = GetMfsPnDescription(plist);
+		// 2018/03/30  是否可以多推送两页的型号给前端
+		String mfsPnDescriptionSql = OmSearchLogic.getFormatPnPageMfs(notRepeatPns, currentPage, pageSize*4);
+		List<com.gecpp.p.product.domain.Product> mfsPnDescriptionPlist = new ArrayList<>();
+		mfsPnDescriptionPlist = OmSearchLogic.findProductsByPnsV2(mfsPnDescriptionSql);
+		m_mfsPnDescription = GetMfsPnDescription(mfsPnDescriptionPlist);
 		
 		// 20170615
 		mfsStandard_count = getMfsListDetailCount(plist);
@@ -827,7 +831,11 @@ public class OrderManager {
 		m_returnSupplier = getSupplierListDetail(plist);
 		
 		// 2018/03/14
-		m_mfsPnDescription = GetMfsPnDescription(plist);
+		// 2018/03/30  是否可以多推送两页的型号给前端
+		String mfsPnDescriptionSql = OmSearchLogic.getFormatPnPageMfs(notRepeatPns, currentPage, pageSize*4);
+		List<com.gecpp.p.product.domain.Product> mfsPnDescriptionPlist = new ArrayList<>();
+		mfsPnDescriptionPlist = OmSearchLogic.findProductsByPnsV2(mfsPnDescriptionSql);
+		m_mfsPnDescription = GetMfsPnDescription(mfsPnDescriptionPlist);
 		
 		// 20170615
 		mfsStandard_count = getMfsListDetailCount(plist);

@@ -36,6 +36,7 @@ import com.gecpp.fm.model.FuzzyManagerModel;
 import com.gecpp.fm.model.OrderManagerModel;
 import com.gecpp.om.OrderManager;
 import com.gecpp.p.product.domain.Mfs;
+import com.luhuiguo.chinese.ChineseUtils;
 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -1296,11 +1297,15 @@ public class FuzzyInstance {
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
 
-            System.out.println("\n" + dateFormat.format(date) + " Sending 'GET' request to URL : " + url);
-            System.out.println("Response Code : " + responseCode);
-            
+
             if(responseCode != 200)
-            	return "";
+            {
+            	System.out.println("\n" + dateFormat.format(date) + " Sending 'GET' request to URL : " + url);
+                System.out.println("Response Code : " + responseCode);
+                
+                return "";
+            }
+            	
             
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream(), "UTF-8"));
@@ -1418,6 +1423,9 @@ private List<String> ElasticQuery(String query){
         
         String strUntaged = "";
         String strTaged = "";
+        
+        // 20180506 transfer Big5 to Simplified chinese
+        strData = ChineseUtils.toSimplified(strData);
         
         // 2018/03/23 for special TE
         if("TE".equalsIgnoreCase(strData.trim()))
@@ -1744,6 +1752,15 @@ private List<String> ElasticQuery(String query){
 	    	result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
 	    else
 	    	result = om.QueryNewPageIdV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+	    
+	    // 20180517 关于模糊搜索推荐型号 用fuzzy
+	    if(result.getTotalCount() == 0)
+	    {
+	    	List<String> pageList = OmSearchLogic.getFuzzyPns(strData);
+	    	
+	    	if(pageList.size() > 0)
+	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
+	    }
 	    
 	    // 用 elasticSearch
 	    if(result.getTotalCount() == 0)
