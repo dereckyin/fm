@@ -167,7 +167,7 @@ public class DbHelper {
 					
 					cpdsFm.setMaxIdleTime(60);
 					
-					LogQueryHistory.InsertLog("fuzzysearch", "connectFm()");
+					//LogQueryHistory.InsertLog("fuzzysearch", "connectFm()");
 				}
 				
 				pmConn = cpdsFm.getConnection();
@@ -329,7 +329,7 @@ public class DbHelper {
 					
 					cpdsPm.setMaxIdleTime(60);
 					
-					LogQueryHistory.InsertLog("fuzzysearch", "connectPm()");
+					//LogQueryHistory.InsertLog("fuzzysearch", "connectPm()");
 	
 				}
 				

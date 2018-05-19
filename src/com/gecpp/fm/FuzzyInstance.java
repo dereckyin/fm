@@ -1433,6 +1433,42 @@ private List<String> ElasticQuery(String query){
         
      // if cached_mfs
         List<IndexRate> cachedPnsMfs = KeywordLogic.getCacheMfs(strData);
+        // 2018/05/19 for suppler search(digikey)
+        if(cachedPnsMfs.size() > 0 && cachedPnsMfs.get(0).getPn().equalsIgnoreCase("supplier"))
+        {
+        	if(abbreviation == null)
+        		abbreviation = new ArrayList<Integer>();
+        	// get all supplier pn
+            for(IndexRate res : cachedPnsMfs)
+            	abbreviation.add(res.getOrder());
+            
+            Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
+        	
+        	// 加亮
+            String strHighLight = "";
+            for(String stoken:keyQuery.getKeyword())
+            {
+            	strHighLight += stoken + ",";
+            }
+            
+            List<String> dummyPns = new ArrayList<String>();
+            List<String> dummyMfs = new ArrayList<String>();
+            
+            int nTotalCount = 0;
+
+        
+            OrderManager om = new OrderManager();
+           
+            result = om.QuerySupplierV2(inventory, lead, rohs, mfs, abbreviation, dummyPns, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, dummyMfs, isLogin, isPaid);	
+
+            // 去除逗號
+            strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+            //result.setHighLight(strHighLight);
+            
+
+            return result;
+            
+        }
         if(cachedPnsMfs.size() > 0)
         {
         	Keyword keyQuery = KeywordLogic.GetAnalyzedKeywords(strData);
@@ -1752,23 +1788,14 @@ private List<String> ElasticQuery(String query){
 	    	result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
 	    else
 	    	result = om.QueryNewPageIdV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
-	    
-	    // 20180517 关于模糊搜索推荐型号 用fuzzy
-	    if(result.getTotalCount() == 0)
-	    {
-	    	List<String> pageList = OmSearchLogic.getFuzzyPns(strData);
-	    	
-	    	if(pageList.size() > 0)
-	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
-	    }
-	    
+
 	    // 用 elasticSearch
 	    if(result.getTotalCount() == 0)
 	    {
 	    	List<String> eIndex = ElasticQuery(strData);
 	    	
-	    	if(eIndex.size() == 0)
-	    		return result;
+	    	//if(eIndex.size() == 0)
+	    	//	return result;
 	    	
 		    List<String> OmList1 = new ArrayList<String>();
 		  
@@ -1777,9 +1804,30 @@ private List<String> ElasticQuery(String query){
 		    
 		    // sort pn
 		    List<IndexRate> recordPns = SortUtil.SortPnByCount(OmList1);
+		    List<String> pageList = new ArrayList<String>();
+		    int count = 0;
+            for(IndexRate res : recordPns)
+            {
+            	pageList.add(res.getPn());
+            	count++;
+            	
+            	if(count > 500)
+            		break;
+            }
 		 
 	    	if(OmList1.size() > 0)
-	    		result = om.QueryNewPageMfsV2(inventory, lead, rohs, mfs, abbreviation, recordPns, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
+	    		
+	    		//result = om.QueryNewPageMfsV2(inventory, lead, rohs, mfs, abbreviation, recordPns, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+	    }
+	    
+	    // 20180517 关于模糊搜索推荐型号 用fuzzy
+	    if(result.getTotalCount() == 0)
+	    {
+	    	List<String> pageList = OmSearchLogic.getFuzzyPns(strData);
+	    	
+	    	if(pageList.size() > 0)
+	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
 	    }
 	    	
 	  

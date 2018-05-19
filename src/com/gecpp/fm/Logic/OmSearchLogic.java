@@ -383,6 +383,27 @@ public class OmSearchLogic {
 			+ ") result "
 			+ "order by pn, prority, mfs_base, created_time desc, type  limit 2000 ";
 	
+	private static final String getAllInfoDetailBySupplier_head_Multi = "select s_id, region, region_code, product_id, inventory, offical_price, price, delivery_place, delivery_circle, moq, store_attach, currency, model, supplier_model, created_time, id, uuid, "
+			+ "pn, supplier_pn, mfs, mfs_id,  supplier_id, shop_id, pkg, catalog, description, param, status, lead, embgo, rohs, config_service, grab_url, doc_url, pic_url, update_attribute, updated_time,  "
+			+ "is_complete, name, local_name, prority, abbreviation, mfs_base, advertise, site_error, catalog_id, tax, type, cooperation, supplier_type, supplier_status "
+			+ "from "
+			+ "( "
+			+ "SELECT a.id as s_id,a.region,a.region_code, "
+			+ "a.product_id,a.inventory, "
+			+ "a.offical_price,a.price,e.delivery_place,e.delivery_circle,a.moq,a.store_attach, case when trim(a.currency) <> '' then a.currency else e.official_currency end as currency, "
+			+ "a.pn as model,a.supplier_pn  "
+			+ "as supplier_model,a.created_time,  "
+			+ "b.id, b.uuid, b.pn, b.supplier_pn, CASE WHEN trim(d.NAME) <> '' THEN d.NAME ELSE b.mfs END as mfs,b.mfs_id,  b.supplier_id,b.shop_id, b.pkg, "
+			+ "b.catalog,  b.description,  "
+			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
+			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
+			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ "FROM pm_product b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
+			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
+			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
+			+ "where b.supplier_id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL) limit 2000 "
+			+ ") result "
+			+ "order by pn, prority, mfs_base, created_time desc, type  limit 2000 ";
 	
 	private static final String getAllInfoDetailByPn_head_Multi_Mfs_Supplier = "select s_id, region, region_code, product_id, inventory, offical_price, price, delivery_place, delivery_circle, moq, store_attach, currency, model, supplier_model, created_time, id, uuid, "
 			+ "pn, supplier_pn, mfs, mfs_id,  supplier_id, shop_id, pkg, catalog, description, param, status, lead, embgo, rohs, config_service, grab_url, doc_url, pic_url, update_attribute, updated_time,  "
@@ -631,9 +652,36 @@ public class OmSearchLogic {
 		return retResult;
 	}
 	
+	private static String removeLastChar(String s) {
+	    return (s == null || s.length() == 0)
+	      ? ""
+	      : (s.substring(0, s.length() - 1));
+	}
+	
+	private static List<String> backwardSplit(String formula)
+	{
+		String bestFit = removeLastChar(formula);
+		List<String> retResult = new ArrayList<String>();
+
+
+		while(!"".equalsIgnoreCase(bestFit))
+		{
+			List<String> result = getFuzzyPn(bestFit, 10);
+			if(result.size() != 0)
+			{
+				retResult = result;
+				break;
+			}
+			else
+				bestFit = removeLastChar(bestFit);
+		}
+		
+		return retResult;
+	}
+	
 	public static List<String> getFuzzyPns(String strData)
 	{
-		List<String> result = maxSplit(strData);
+		List<String> result = backwardSplit(strData);
 		
 		if(result.size() == 0)
 			result= getFuzzyPn(strData.substring(0, 1), 100);
@@ -3509,7 +3557,7 @@ public class OmSearchLogic {
         return redisResult;
 	}
 	
-	private static String getFormatedId(List<Integer> pns)
+	public static String getFormatedId(List<Integer> pns)
 	{
 		String pnSql = "";
 		
@@ -4036,4 +4084,71 @@ private static List<Integer> sortCatalog(List<Integer> catalogId, int limit) {
 
 	
     }
+
+	public static List<com.gecpp.p.product.domain.Product> findProductsBySupplier(String idsSql) {
+		// TODO Auto-generated method stub
+		List<com.gecpp.p.product.domain.Product> returnList = new ArrayList<com.gecpp.p.product.domain.Product>();
+		/*	
+			if(!idsSql.equalsIgnoreCase(""))
+	        {
+				// 2017/04/28 for 分表
+				List<Map<String, Object>> proMapList = null;
+				try {
+					proMapList = fetchFromAllTables(idsSql);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+	            returnList = formatToProductList(proMapList);
+	        } 
+	        
+	        */
+
+	        if(!idsSql.equalsIgnoreCase(""))
+	        {
+	        	List<Map<String, Object>> proMapList = null;
+	        	//20170919 build cache system 
+	    		long cacheid = KeywordLogic.getMd5(idsSql);
+	    		/*
+	    		//20170919 build cache system 
+	    		List<Map<String, Object>> plist = ReadFromCache(cacheid);
+	    		if(plist == null)
+	    		{
+		        	// 20161029 for 分表
+		        	String selectProductListById = getAllInfoDetailByPn_head_Multi.replace("*******", idsSql);
+		        	
+		        	selectProductListById = selectProductListById.replace("(c.status='1' OR c.status  IS NULL)", " 1=1 ");
+		            // String selectProductListById = getAllInfoDetailByPn_head + idsSql + getAllInfoDetailByPn_foot;
+		            proMapList = OrderManagerModel.queryForList(selectProductListById);
+	    		}
+	    		else
+	    			proMapList = plist;
+	    		
+	    		if(plist == null)
+	    			WriteToCache(cacheid, proMapList);
+	    			*/
+	    		
+	    		
+	    		
+	    		// 20161029 for 分表
+	        	String selectProductListById = getAllInfoDetailBySupplier_head_Multi.replace("*******", idsSql);
+	        	
+	        	selectProductListById = selectProductListById.replace("(c.status='1' OR c.status  IS NULL)", " 1=1 ");
+	            // String selectProductListById = getAllInfoDetailByPn_head + idsSql + getAllInfoDetailByPn_foot;
+	            proMapList = OrderManagerModel.queryForList(selectProductListById);
+	            
+	            
+	            
+	            
+	            returnList = formatToProductList(proMapList);
+	        } 
+
+			
+			return returnList;
+	}
+
 }

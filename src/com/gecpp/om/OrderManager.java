@@ -760,6 +760,131 @@ public class OrderManager {
 		return result;
     }
     
+    // 2018/05/19 Supplier Search
+    public OrderResultDetail QuerySupplierV2(int inventory, 
+			int lead, 
+			int rohs, 
+			List<Integer> mfs, 
+			List<Integer> abbreviation, 
+			List<String> notRepeatPns,
+			List<String> pkg,
+			int hasStock,
+			int noStock,
+			int hasPrice,
+			int hasInquery,
+			int currentPage, 
+			int pageSize,
+			int amount,					// 起訂量
+			List<String> currencies,	// 幣別
+			List<Integer> catalog_ids,	// 分類ID
+			List<String> core_mfs,
+			int isLogin,
+			int isPaid
+			)
+    {
+    	
+		
+		List<com.gecpp.p.product.domain.Product> plist = new ArrayList<>();
+		List<com.gecpp.p.product.domain.Product> OmList = new ArrayList<>();
+		
+		//String pnsSql = OmSearchLogic.getFormatPnPageV1(notRepeatPns, currentPage, pageSize);
+		String pnsSql = OmSearchLogic.getFormatedId(abbreviation);
+		
+		//String strSql = OmSearchLogic.getAllInforByPnList(pnsSql, inventory, lead, rohs, mfs, abbreviation);
+		plist = OmSearchLogic.findProductsBySupplier(pnsSql);
+		
+
+		List<com.gecpp.p.product.domain.Product> org_OmList = new ArrayList<com.gecpp.p.product.domain.Product>(plist);
+
+		org_OmList = OmSearchLogic.getOrgSupplierListDetail(org_OmList, isLogin);
+		plist = OmSearchLogic.getSupplierListDetail(plist, isLogin, isPaid);
+		
+		if(core_mfs.size() > 0)
+		{
+			plist = filterByMfsName(plist, core_mfs);
+			org_OmList = filterByMfsName(org_OmList, core_mfs);
+		}
+		
+		// 20160920
+		m_returnMfs = getMfsListDetail(plist);
+		m_returnSupplier = getSupplierListDetail(plist);
+		
+		// 2018/03/14
+		m_mfsPnDescription = GetMfsPnDescription(plist);
+		
+		// 20170615
+		mfsStandard_count = getMfsListDetailCount(plist);
+		suppliers_count = getSupplierListDetailCount(plist);
+		m_currencies = getCurrencyDetail(plist);
+		String[] counts = OmSearchLogic.getPriceByProductListDetailCount(plist).split(",");
+		status_count = new HashMap<String, Integer>();
+		status_count.put("hasStock", Integer.parseInt(counts[0]));
+		status_count.put("noStock", Integer.parseInt(counts[1]));
+		status_count.put("hasPrice", Integer.parseInt(counts[2]));
+		status_count.put("hasInquery", Integer.parseInt(counts[3]));
+		catalogs_count = getCatalogDetailCount(plist);
+		middle_catalogs_count = getMiddleCatalogDetailCount(catalogs_count);
+		parent_catalogs_count = getParentCatalogDetailCount(catalogs_count);
+		
+		catalogList = formatCatalogTree(parent_catalogs_count, middle_catalogs_count, catalogs_count);
+		
+		// 20160514 change to search price next time
+		plist = OmSearchLogic.getPriceByProductListDetail(plist, inventory, hasStock, noStock, hasPrice, hasInquery);
+		plist = OmSearchLogic.getPriceByProductListDetail(plist, lead, rohs, mfs, abbreviation, pkg);
+		plist = OmSearchLogic.getPriceByProductListDetail(plist, amount, currencies, catalog_ids);
+		//InsertQueryLog("getProductByGroupInStoreDeep", strSql, om_conn);
+		plist = dealWithWebPListRepeatDetail(plist);
+
+		// 分頁在此做
+		OmList = OmSearchLogic.pageDataDetail(plist, currentPage, pageSize);
+		//OmList = plist;
+		
+		OrderResultDetail result = formatFromProductListDetail(OmList);
+
+		
+		// find out the original data
+		org_OmList = OmSearchLogic.getPriceByProductListDetail(org_OmList, inventory, hasStock, noStock, hasPrice, hasInquery);
+		org_OmList = OmSearchLogic.getPriceByProductListDetail(org_OmList, lead, rohs, mfs, abbreviation, pkg);
+		org_OmList = OmSearchLogic.getPriceByProductListDetail(org_OmList, amount, currencies, catalog_ids);
+		//InsertQueryLog("getProductByGroupInStoreDeep", strSql, om_conn);
+		org_OmList = dealWithWebPListRepeatDetail(org_OmList);
+		org_OmList = OmSearchLogic.pageDataDetail(org_OmList, currentPage, pageSize);
+		
+		org_OmList = OmSearchLogic.excludeProductList(org_OmList, OmList);
+		
+		// 分頁在此做
+		//org_OmList = OmSearchLogic.pageDataDetail(org_OmList, currentPage, pageSize);
+		
+		LinkedHashMap<String, Map<String, List<Integer>>> countList;
+		OrderResultDetail org_result = formatFromProductListDetail(org_OmList);
+		countList = countProductListMap(org_result.getProductList());
+		countList = conductProductListMap(countList, result.getProductList(), isLogin, isPaid);
+		result.setCountList(countList);
+		
+		
+		// 20160920
+		result.setSuppliers(m_returnSupplier);
+        result.setMfsStandard(m_returnMfs);
+        
+        // 20170615
+        result.setMfsStandard_count(mfsStandard_count);
+        result.setSuppliers_count(suppliers_count);
+        result.setCurrencies(m_currencies);
+        result.setStatus_count(status_count);
+        result.setCatalogs_count(catalogs_count);
+        result.setMiddle_catalogs_count(middle_catalogs_count);
+        result.setParent_catalogs_count(parent_catalogs_count);
+        result.setCatalogList(catalogList);
+
+        result = orderProductListDetail(result);
+        result.setTotalCount(OmSearchLogic.pageCountDetail(plist));
+        //result.setTotalCount(notRepeatPns.size());
+        
+     // 2018/03/14
+        result.setMfsPnDescription(m_mfsPnDescription);
+
+		return result;
+    }
     
     /* 深度搜尋 by PN */
     /* 20160706 ------------------            詳情頁深度搜尋 by PN */

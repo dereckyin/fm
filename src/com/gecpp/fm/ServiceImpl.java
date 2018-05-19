@@ -9,6 +9,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import com.caucho.hessian.server.HessianServlet;
+import com.gecpp.fm.Util.LogQueryHistory;
 import com.gecpp.p.product.domain.Mfs;
 
 public class ServiceImpl extends HessianServlet implements IFuzzySearch {
@@ -35,6 +36,7 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 	}
 	
 	@Override
@@ -81,6 +83,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 		
 		OrderResult result = fi.QueryFuzzyRecordByListPage(fuzzyString, currentPage, pageSize);
 		
+		LogQueryHistory.InsertLog("ServiceImpl", "QueryFuzzyRecordByListPage()");
+		
 		return result;
 	}
 	
@@ -97,6 +101,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 		FuzzyInstance fi = new FuzzyInstance();
 		
 		OrderResult result = fi.QueryFuzzyRecordByDeptSearch(pn, inventory, lead, rohs, mfs, abbreviation, currentPage, pageSize);
+		
+		LogQueryHistory.InsertLog("ServiceImpl", "QueryFuzzyRecordByDeptSearch()");
 		
 		return result;
 	}
@@ -133,6 +139,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 		
 		QueryResult result = fi.QueryProductByMultipleSearch(parts);
 		
+		LogQueryHistory.InsertLog("ServiceImpl", "getProductByMultipleSearch()");
+		
 		return result;
 	}
 	
@@ -142,6 +150,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 		FuzzyInstance fi = new FuzzyInstance();
 		
 		QueryResult result = fi.QueryProductByMultipleSearchJson(parts);
+		
+		LogQueryHistory.InsertLog("ServiceImpl", "getProductByMultipleSearchJson()");
 		
 		return result;
 	}
@@ -155,6 +165,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 		FuzzyInstance fi = new FuzzyInstance();
 		
 		Map<String,Map<String,MultipleParam>> result = fi.QueryParamterByMultipleSearch(stockArr);
+		
+		LogQueryHistory.InsertLog("ServiceImpl", "findParamByPn()");
 		
 		return result;
 	}
@@ -176,6 +188,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 	{
 		FuzzyInstance fi = new FuzzyInstance();
 		OrderResultDetail result = fi.QueryFuzzyRecordByDeptSearchDetail(strData, inventory, lead, rohs, mfs, abbreviation, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize);
+		
+		LogQueryHistory.InsertLog("ServiceImpl", "QueryFuzzyRecordByDeptSearchDetail()");
 		
 		return result;
 	}
@@ -200,6 +214,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 	{
 		FuzzyInstance fi = new FuzzyInstance();
 		OrderResultDetail result = fi.QueryNewPageV1(strData, inventory, lead, rohs, mfs, abbreviation, pkg, hasStock, noStock, hasPrice, hasInquery, amount, currencies, catalog_ids, currentPage, pageSize);
+		
+		LogQueryHistory.InsertLog("ServiceImpl", "QueryNewPageV1()");
 		
 		return result;
 	}
@@ -250,6 +266,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 		pro.setMfsList(lst);
 		pro.setMfsCount(lst.size());
 		
+		LogQueryHistory.InsertLog("ServiceImpl", "ProcurementQuery01()");
+		
 		return pro;
 		
 	}
@@ -267,6 +285,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 		FuzzyInstance fi = new FuzzyInstance();
 		
 		ProcurementSet02 result = fi.Procurement02(strData,  mfs_ids, amount, isLogin, isPaid);
+		
+		LogQueryHistory.InsertLog("ServiceImpl", "ProcurementQuery02()");
 		
 		return result;
 	}
@@ -286,6 +306,8 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 		FuzzyInstance fi = new FuzzyInstance();
 		
 		ProcurementSet02 result = fi.Procurement02(strData,  mfs_ids, amount, isLogin, isPaid);
+		
+		LogQueryHistory.InsertLog("ServiceImpl", "ProcurementQuery03()");
 		
 		return result;
 	}

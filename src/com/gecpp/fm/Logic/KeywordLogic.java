@@ -369,6 +369,16 @@ public class KeywordLogic {
 				
 				bFound = true;
 			}
+			else if(retAlter.getSupplier().size() > 0)
+			{
+				// 2018/05/19 for suppler search(digikey)
+				for(Integer sid : retAlter.getSupplier())
+				{
+					IndexRate res = new IndexRate("supplier", 0, "", 0, 0, sid);
+					aRet.add(res);
+				}
+				newInput += term + " ";
+			}
 			else
 				newInput += term + " ";
 		}
