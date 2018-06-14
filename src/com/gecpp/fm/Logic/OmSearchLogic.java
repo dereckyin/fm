@@ -92,7 +92,7 @@ public class OmSearchLogic {
             + "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
             + "where b.pn in(";
 
-    private static String sSql_tail = ") and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL) order by b.pn, c.type, d.name, a.created_time desc  limit 2000 ";
+    private static String sSql_tail = ") and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL) order by b.pn, c.type, d.name, a.created_time desc  limit 2000 ";
     
 	
 	// 20161029 for 分表
@@ -103,13 +103,13 @@ public class OmSearchLogic {
 			+ "			FROM pm_product b  "
 			+ "			LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id)  "
 			+ "			LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c  "
-			+ "			where b.pn in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "			where b.pn in(*******) and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union  "
 			+ "SELECT 0 as inventory, '' as offical_price, b.id, b.pn, b.supplier_pn, CASE WHEN trim(d.NAME) <> '' THEN d.NAME ELSE b.mfs END as mfs, b.supplier_id, b.lead, b.rohs, b.mfs_id, b.pkg, c.name , c.TYPE "
 			+ "			FROM pm_supplier_product_c1s  b  "
 			+ "			LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id)  "
 			+ "			LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c  "
-			+ "			where b.pn in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "			where b.pn in(*******) and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ ") result "
 			+ "order by pn, TYPE ";
 	
@@ -120,13 +120,13 @@ public class OmSearchLogic {
 			+ "			FROM pm_product b  "
 			+ "			LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id)  "
 			+ "			LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c  "
-			+ "			where b.id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "			where b.id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union  "
 			+ "SELECT 0 as inventory, '' as offical_price, b.id, b.pn, b.supplier_pn, CASE WHEN trim(d.NAME) <> '' THEN d.NAME ELSE b.mfs END as mfs, b.supplier_id, b.lead, b.rohs, b.mfs_id, b.pkg, c.name , c.TYPE "
 			+ "			FROM pm_supplier_product_c1s  b  "
 			+ "			LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id)  "
 			+ "			LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c  "
-			+ "			where b.id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "			where b.id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ ") result "
 			+ "order by pn, TYPE ";
 	
@@ -145,7 +145,7 @@ public class OmSearchLogic {
 	
 	
 	
-	private static final String getAllInfoByPn_foot = ") and b.supplier_id = c.id AND b.status is null and  (c.status='1' OR c.status  IS NULL) "; //order by b.pn, c.TYPE";
+	private static final String getAllInfoByPn_foot = ") and b.supplier_id = c.id AND b.status is null and  (c.status in ('1', '2') OR c.status  IS NULL) "; //order by b.pn, c.TYPE";
 	
 	// 20160526 use pm_store_price_select
 	/*
@@ -176,7 +176,7 @@ public class OmSearchLogic {
 			+ "FROM pm_product b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL) "
+			+ "where b.id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL) "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -191,7 +191,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_c1s b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_c1s' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_c1s' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -206,7 +206,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_octopart b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_octopart' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_octopart' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -221,7 +221,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_findchips b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findchips' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findchips' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -236,7 +236,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_463 b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_463' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_463' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -251,7 +251,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_findic b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findic' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findic' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -266,7 +266,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_ickey b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_ickey' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.id in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_ickey' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ ") result "
 			+ "order by pn, prority, mfs_base, created_time desc, type  limit 2000 ";
 	
@@ -289,7 +289,7 @@ public class OmSearchLogic {
 			+ "FROM pm_product b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL) "
+			+ "where b.pn in(*******) and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL) "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -304,7 +304,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_c1s b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_c1s' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_c1s' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -319,7 +319,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_octopart b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_octopart' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_octopart' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -334,7 +334,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_findchips b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findchips' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findchips' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -349,7 +349,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_463 b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_463' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_463' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -364,7 +364,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_findic b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findic' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findic' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -379,7 +379,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_ickey b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_ickey' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_ickey' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ ") result "
 			+ "order by pn, prority, mfs_base, created_time desc, type  limit 2000 ";
 	
@@ -401,7 +401,7 @@ public class OmSearchLogic {
 			+ "FROM pm_product b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.supplier_id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL) limit 2000 "
+			+ "where b.supplier_id in(*******) and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL) limit 2000 "
 			+ ") result "
 			+ "order by pn, prority, mfs_base, created_time desc, type  limit 2000 ";
 	
@@ -423,7 +423,7 @@ public class OmSearchLogic {
 			+ "FROM pm_product b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -438,7 +438,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_c1s b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_c1s' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_c1s' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -453,7 +453,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_octopart b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_octopart' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_octopart' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -468,7 +468,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_findchips b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findchips' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findchips' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -483,7 +483,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_463 b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_463' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_463' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -498,7 +498,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_findic b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findic' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_findic' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ "union "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
 			+ "a.product_id,a.inventory, "
@@ -513,7 +513,7 @@ public class OmSearchLogic {
 			+ "FROM pm_supplier_product_ickey b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
-			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_ickey' ) AND b.status is null and (c.status='1' OR c.status  IS NULL)  "
+			+ "where b.pn in(*******) and b.supplier_id = c.id and b.supplier_id in (select supplier_id from pm_supplier_table_relation where table_name = 'pm_supplier_product_ickey' ) AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL)  "
 			+ ") result where 1=1 ";
 			
 	
@@ -552,7 +552,7 @@ public class OmSearchLogic {
 
     private static final String getAllInfoByPn_getPn = "";
 
-    private static final String getAllInfoDetailByPn_foot = ") and b.supplier_id = c.id AND b.status is null and (c.status='1' OR c.status  IS NULL) order by b.pn, prority, mfs_base, a.created_time desc limit 2000";
+    private static final String getAllInfoDetailByPn_foot = ") and b.supplier_id = c.id AND b.status is null and (c.status in ('1', '2') OR c.status  IS NULL) order by b.pn, prority, mfs_base, a.created_time desc limit 2000";
 
     private static int confCount = 0;
     private static Config config = null;
@@ -2139,7 +2139,7 @@ public class OmSearchLogic {
 	        	// 20161029 for 分表
 	        	String selectProductListById = getAllInfoDetailByPn_head_Multi.replace("*******", idsSql);
 	        	
-	        	selectProductListById = selectProductListById.replace("(c.status='1' OR c.status  IS NULL)", " 1=1 ");
+	        	selectProductListById = selectProductListById.replace("(c.status in ('1', '2') OR c.status  IS NULL)", " 1=1 ");
 	            // String selectProductListById = getAllInfoDetailByPn_head + idsSql + getAllInfoDetailByPn_foot;
 	            proMapList = OrderManagerModel.queryForList(selectProductListById);
     		}
@@ -2155,7 +2155,7 @@ public class OmSearchLogic {
     		// 20161029 for 分表
         	String selectProductListById = getAllInfoDetailByPn_head_Multi.replace("*******", idsSql);
         	
-        	selectProductListById = selectProductListById.replace("(c.status='1' OR c.status  IS NULL)", " 1=1 ");
+        	selectProductListById = selectProductListById.replace("(c.status in ('1', '2') OR c.status  IS NULL)", " 1=1 ");
             // String selectProductListById = getAllInfoDetailByPn_head + idsSql + getAllInfoDetailByPn_foot;
             proMapList = OrderManagerModel.queryForList(selectProductListById);
             
@@ -2250,7 +2250,7 @@ public class OmSearchLogic {
         	
         	selectProductListById += " order by pn, prority, mfs_base, created_time desc, type  limit 2000 ";
         	
-        	selectProductListById = selectProductListById.replace("(c.status='1' OR c.status  IS NULL)", " 1=1 ");
+        	selectProductListById = selectProductListById.replace("(c.status in ('1', '2') OR c.status  IS NULL)", " 1=1 ");
         	
             List<Map<String, Object>> proMapList = OrderManagerModel.queryForList(selectProductListById);
             returnList = formatToProductList(proMapList);
@@ -2287,7 +2287,7 @@ public class OmSearchLogic {
 			// 20161029 for 分表
 			String selectProductListById = getAllInfoDetailById_head_Multi.replace("*******", idsSql);
 			
-			selectProductListById = selectProductListById.replace("(c.status='1' OR c.status  IS NULL)", " 1=1 ");
+			selectProductListById = selectProductListById.replace("(c.status in ('1', '2') OR c.status  IS NULL)", " 1=1 ");
 			
             // String selectProductListById = getAllInfoDetailById_head + idsSql + getAllInfoDetailByPn_foot;
             List<Map<String, Object>> proMapList = OrderManagerModel.queryForList(selectProductListById);
@@ -2638,7 +2638,10 @@ public class OmSearchLogic {
 
         float exchangeRate = supplierConfig.getExchangeRate();
         if (!officialCurrencyIsNull) {
-            exchangeRate = config.getExchangeRate(officialCurrency, distCurrency);
+        	try {
+        		exchangeRate = config.getExchangeRate(officialCurrency, distCurrency);
+        	}
+        	catch(Exception e) {}
         }
 
         float profit = supplierConfig.getProfitRate();
@@ -2842,7 +2845,7 @@ public class OmSearchLogic {
             // 未登录状态(isLogin = 0)
             if(isLogin == 0)
 			{
-				if(cooperation == 1 && status == 1)
+				if(cooperation == 1 && (status == 1 || status == 2))
 				{
 					bAddToNewList = true;
 					
@@ -2851,7 +2854,7 @@ public class OmSearchLogic {
 				}
 				
 				// 預存一筆非合作廠商
-				if(cooperation != 1 && status == 1)
+				if(cooperation != 1 && (status == 1 || status == 2))
 				{
 					if(supplier_type == 2)	// 國外
 					{
@@ -2870,10 +2873,10 @@ public class OmSearchLogic {
 			// 已登录未付费(isLogin =1, isPaid = 0)
 			if(isLogin == 1 && isPaid == 0)
 			{
-				if((cooperation == 1 || cooperation == 2) && supplier_type == 2 && status == 1)
+				if((cooperation == 1 || cooperation == 2) && supplier_type == 2 && (status == 1 || status == 2))
 					bAddToNewList = true;
 				
-				if((cooperation == 1 || cooperation == 2) && supplier_type == 1 && status == 1)
+				if((cooperation == 1 || cooperation == 2) && supplier_type == 1 && (status == 1 || status == 2))
 				{
 					midProductList.add(pro);
 				}
@@ -2957,7 +2960,7 @@ public class OmSearchLogic {
             {}
    
 
-			if((cooperation == 1 || cooperation == 2) && (supplier_type == 1 || supplier_type == 2) && status == 1)
+			if((cooperation == 1 || cooperation == 2) && (supplier_type == 1 || supplier_type == 2) && (status == 1 || status == 2))
 				bAddToNewList = true;
 			
 			
@@ -2986,6 +2989,13 @@ public class OmSearchLogic {
 		Map<String, com.gecpp.p.product.domain.Product> noneProductList = new HashMap<String, com.gecpp.p.product.domain.Product>();
 		// 國內非合作供應商
 		Map<String, com.gecpp.p.product.domain.Product> domainProductList = new HashMap<String, com.gecpp.p.product.domain.Product>();
+		
+		// 20180531  如果合作供应商<5个，则展现(5-合作供应商数量）个非合作供应商
+		// 如果当前产品没有合作供应商则展现最多不超过5条非合作供应商数据
+		// 5筆非合作供應商
+		Map<String, List<com.gecpp.p.product.domain.Product>> FiveProductList = new HashMap<String, List<com.gecpp.p.product.domain.Product>>();
+		// 合作供應商
+		Map<String, List<com.gecpp.p.product.domain.Product>> CorpProductList = new HashMap<String, List<com.gecpp.p.product.domain.Product>>();
 		
 		// 非合作供應商對照表
 		List<String> cooperation_ProductList = new ArrayList<String>();
@@ -3027,7 +3037,7 @@ public class OmSearchLogic {
             // 未登录状态(isLogin = 0)
             if(isLogin == 0)
 			{
-				if(cooperation == 1 && status == 1)
+				if(cooperation == 1 && (status == 1 || status == 2))
 				{
 					bAddToNewList = true;
 					
@@ -3036,7 +3046,9 @@ public class OmSearchLogic {
 				}
 				
 				// 預存一筆非合作廠商
-				if(cooperation != 1 && status == 1)
+				// 20180531  如果合作供应商<5个，则展现(5-合作供应商数量）个非合作供应商
+				// 如果当前产品没有合作供应商则展现最多不超过5条非合作供应商数据
+				if(cooperation != 1 && (status == 1 || status == 2))
 				{
 					if(supplier_type == 2)	// 國外
 					{
@@ -3049,16 +3061,44 @@ public class OmSearchLogic {
 						if(!domainProductList.containsKey(pn_mfs))
 							domainProductList.put(pn_mfs, pro);
 					}
+					
+					// 先把非合作供應商資料存起來
+					if(FiveProductList.containsKey(pn_mfs))
+					{
+						List<com.gecpp.p.product.domain.Product> value = FiveProductList.get(pn_mfs);
+						value.add(pro);
+					}
+					else
+					{
+						List<com.gecpp.p.product.domain.Product> value = new ArrayList<com.gecpp.p.product.domain.Product>();
+						value.add(pro);
+						FiveProductList.put(pn_mfs, value);
+					}
+				}
+				else
+				{
+					// 把合作供應商資料存起來
+					if(CorpProductList.containsKey(pn_mfs))
+					{
+						List<com.gecpp.p.product.domain.Product> value = CorpProductList.get(pn_mfs);
+						value.add(pro);
+					}
+					else
+					{
+						List<com.gecpp.p.product.domain.Product> value = new ArrayList<com.gecpp.p.product.domain.Product>();
+						value.add(pro);
+						CorpProductList.put(pn_mfs, value);
+					}
 				}
 			}
 
 			// 已登录未付费(isLogin =1, isPaid = 0)
 			if(isLogin == 1 && isPaid == 0)
 			{
-				if((cooperation == 1 || cooperation == 2) && supplier_type == 2 && status == 1)
+				if((cooperation == 1 || cooperation == 2) && supplier_type == 2 && (status == 1 || status == 2))
 					bAddToNewList = true;
 				
-				if((cooperation == 1 || cooperation == 2) && supplier_type == 1 && status == 1)
+				if((cooperation == 1 || cooperation == 2) && supplier_type == 1 && (status == 1 || status == 2))
 				{
 					//中間價
 					sup.setCode(0);
@@ -3071,7 +3111,7 @@ public class OmSearchLogic {
 			// 已登录已付费(isLogin =1, isPaid = 1)
 			if(isLogin == 1 && isPaid == 1)
 			{
-				if((cooperation == 1 || cooperation == 2) && (supplier_type == 1 || supplier_type == 2) && status == 1)
+				if((cooperation == 1 || cooperation == 2) && (supplier_type == 1 || supplier_type == 2) && (status == 1 || status == 2))
 					bAddToNewList = true;
 			}
 			
@@ -3089,6 +3129,70 @@ public class OmSearchLogic {
 				newProductList.add(pro);
 			}
         }
+		
+		// 未登录状态(isLogin = 0)
+		// 20180531  如果合作供应商<5个，则展现(5-合作供应商数量）个非合作供应商
+		// 如果当前产品没有合作供应商则展现最多不超过5条非合作供应商数据
+		if(isLogin == 0)
+		{
+			// 先整理並計算合作共應商的狀態
+			Map<String, List<com.gecpp.p.product.domain.Product>> PreFinalProductList = new HashMap<String, List<com.gecpp.p.product.domain.Product>>();
+			
+			for(com.gecpp.p.product.domain.Product pro : newProductList)
+			{
+				String pn_mfs = pro.getPn() + pro.getMfs();
+				
+				// 把合作供應商資料存起來
+				if(PreFinalProductList.containsKey(pn_mfs))
+				{
+					List<com.gecpp.p.product.domain.Product> value = PreFinalProductList.get(pn_mfs);
+					value.add(pro);
+				}
+				else
+				{
+					List<com.gecpp.p.product.domain.Product> value = new ArrayList<com.gecpp.p.product.domain.Product>();
+					value.add(pro);
+					PreFinalProductList.put(pn_mfs, value);
+				}
+			}
+			
+			for (Map.Entry<String, List<com.gecpp.p.product.domain.Product>> entry : PreFinalProductList.entrySet())
+			{
+				List<com.gecpp.p.product.domain.Product> prolist = entry.getValue();
+				
+				// 20180531  如果合作供应商<5个，则展现(5-合作供应商数量）个非合作供应商
+				if(prolist.size() < 5)
+				{
+					if(FiveProductList.containsKey(entry.getKey()))
+					{
+						List<com.gecpp.p.product.domain.Product> no_corp_pro = FiveProductList.get(entry.getKey());
+						for(com.gecpp.p.product.domain.Product p : no_corp_pro)
+						{
+							if(prolist.size() < 6)
+							{
+								// 清除之前借用的狀態
+								Supplier sup = p.getSupplier();
+								sup.setCode(0);
+								sup.setPriority(0);
+								p.setSupplier(sup);
+								prolist.add(p);
+							}
+						}
+						
+					}
+				}
+			}
+			
+			List<com.gecpp.p.product.domain.Product> newvalue = new ArrayList<com.gecpp.p.product.domain.Product>();
+			for (Map.Entry<String, List<com.gecpp.p.product.domain.Product>> entry : PreFinalProductList.entrySet())
+			{
+				List<com.gecpp.p.product.domain.Product> prolist = entry.getValue();
+				newvalue.addAll(prolist);
+			}
+			
+			newProductList = newvalue;
+			
+		}
 		
 		// 整理中間價
 		midProductList = GetMidPriceProduct(midProductList);
@@ -4121,7 +4225,7 @@ private static List<Integer> sortCatalog(List<Integer> catalogId, int limit) {
 		        	// 20161029 for 分表
 		        	String selectProductListById = getAllInfoDetailByPn_head_Multi.replace("*******", idsSql);
 		        	
-		        	selectProductListById = selectProductListById.replace("(c.status='1' OR c.status  IS NULL)", " 1=1 ");
+		        	selectProductListById = selectProductListById.replace("(c.status in ('1', '2') OR c.status  IS NULL)", " 1=1 ");
 		            // String selectProductListById = getAllInfoDetailByPn_head + idsSql + getAllInfoDetailByPn_foot;
 		            proMapList = OrderManagerModel.queryForList(selectProductListById);
 	    		}
@@ -4137,7 +4241,7 @@ private static List<Integer> sortCatalog(List<Integer> catalogId, int limit) {
 	    		// 20161029 for 分表
 	        	String selectProductListById = getAllInfoDetailBySupplier_head_Multi.replace("*******", idsSql);
 	        	
-	        	selectProductListById = selectProductListById.replace("(c.status='1' OR c.status  IS NULL)", " 1=1 ");
+	        	selectProductListById = selectProductListById.replace("(c.status in ('1', '2') OR c.status  IS NULL)", " 1=1 ");
 	            // String selectProductListById = getAllInfoDetailByPn_head + idsSql + getAllInfoDetailByPn_foot;
 	            proMapList = OrderManagerModel.queryForList(selectProductListById);
 	            

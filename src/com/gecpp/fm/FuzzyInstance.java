@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
@@ -1292,7 +1293,13 @@ public class FuzzyInstance {
 
             int responseCode = 0;
 
-            responseCode = con.getResponseCode();
+            try {
+            	responseCode = con.getResponseCode();
+            }
+            catch(ConnectException e)
+            {
+            	return "";
+            }
             
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
@@ -1788,6 +1795,18 @@ private List<String> ElasticQuery(String query){
 	    	result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
 	    else
 	    	result = om.QueryNewPageIdV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+	    
+	    
+	 // 20180517 关于模糊搜索推荐型号 用fuzzy
+	    if(result.getTotalCount() == 0)
+	    {
+	    	List<String> pageList = OmSearchLogic.getFuzzyPns(strData);
+	    	
+	    	if(pageList.size() > 0)
+	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
+	    }
+	    
+	    
 
 	    // 用 elasticSearch
 	    if(result.getTotalCount() == 0)
@@ -1821,14 +1840,7 @@ private List<String> ElasticQuery(String query){
 	    		//result = om.QueryNewPageMfsV2(inventory, lead, rohs, mfs, abbreviation, recordPns, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
 	    }
 	    
-	    // 20180517 关于模糊搜索推荐型号 用fuzzy
-	    if(result.getTotalCount() == 0)
-	    {
-	    	List<String> pageList = OmSearchLogic.getFuzzyPns(strData);
-	    	
-	    	if(pageList.size() > 0)
-	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
-	    }
+	    
 	    	
 	  
 	    watch.getElapseTimeOrderResult(keyQuery, OmList);

@@ -249,6 +249,7 @@ public class KeywordLogic {
 		}
 		catch (SQLException e)
 		{
+			System.out.println(sInput + id);
 			e.printStackTrace();
 		}
 		finally {
