@@ -2497,6 +2497,8 @@ public class OrderManager {
                 		try
                 		{
 	                	if(item.getStorePrice().getOfficalPrice() != null)
+	                		if(item.getSupplier().getStatus().equalsIgnoreCase("2"))	// 20180621 展現下架供應商排序要置後
+	                			continue;
 	                		if(!item.getStorePrice().getOfficalPrice().isEmpty())
 	                			count++;
                 		}
@@ -3622,6 +3624,11 @@ public class OrderManager {
         List<Mfs> returnMfs = new ArrayList<Mfs>();
 
 //        List<Product> needUpdatedProducts = new ArrayList<>();
+        
+        // 20180621 展現下架供應商排序要置後
+        List<com.gecpp.p.product.domain.Product> hidePlist = new ArrayList<com.gecpp.p.product.domain.Product>();
+        
+        
         // 根据pn进行存储
         for (com.gecpp.p.product.domain.Product pro : plist) {
             String pnkey = pro.getPn();
@@ -3634,7 +3641,12 @@ public class OrderManager {
             boolean addToListflag = true;
 
             pnProductMap.put(id, pro);
-
+            // 20180621 展現下架供應商排序要置後
+            if(pro.getSupplier().getStatus().equalsIgnoreCase("2"))
+            {
+            	hidePlist.add(pro);
+            	continue;
+            }
 
             if (addToListflag) {
 
@@ -3691,6 +3703,61 @@ public class OrderManager {
             }
 
         }
+        // 20180621 展現下架供應商排序要置後
+        for (com.gecpp.p.product.domain.Product pro : hidePlist) {
+            String pnkey = pro.getPn();
+            
+            Map<String, List<com.gecpp.p.product.domain.Product>> mfsGroupMap = resultMap.get(pnkey);	// mfs, list<product>
+            
+            String mfs = pro.getMfs();
+            if (mfs == null) {
+                mfs = pro.getMfs();
+            }
+            
+            // 有PN有MFS
+            if(mfsGroupMap != null && mfsGroupMap.get(mfs) != null)
+            {
+            	List<com.gecpp.p.product.domain.Product> list = mfsGroupMap.get(mfs);
+            	list.add(pro);
+            }
+            
+            // 有PN無MFS
+            if(mfsGroupMap != null && mfsGroupMap.get(mfs) == null)
+            {
+            	Map<String, List<com.gecpp.p.product.domain.Product>> newGroupMap = resultMap.get(pnkey + " ");
+            	if(newGroupMap == null) {
+            		newGroupMap = new LinkedHashMap<String, List<com.gecpp.p.product.domain.Product>>();
+            		resultMap.put(pnkey + " ", newGroupMap);
+            	}
+            	
+                List<com.gecpp.p.product.domain.Product> list = newGroupMap.get(mfs);
+                if (list == null) {
+                    list = new ArrayList<com.gecpp.p.product.domain.Product>();
+                    newGroupMap.put(mfs, list);
+                }
+                
+                list.add(pro);
+            }
+            
+            // 無PN
+            if(mfsGroupMap == null) {
+            	mfsGroupMap = new LinkedHashMap<String, List<com.gecpp.p.product.domain.Product>>();
+                resultMap.put(pnkey, mfsGroupMap);
+                
+
+                List<com.gecpp.p.product.domain.Product> list = mfsGroupMap.get(mfs);
+                if (list == null) {
+                    list = new ArrayList<com.gecpp.p.product.domain.Product>();
+                    mfsGroupMap.put(mfs, list);
+                }
+                
+            
+                list.add(pro);
+            }
+           
+        }
+        
+        
         
         result.setProductList(resultMap);
         

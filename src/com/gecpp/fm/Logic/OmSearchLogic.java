@@ -1881,13 +1881,25 @@ public class OmSearchLogic {
 	public static List<com.gecpp.p.product.domain.Product> pageDataDetail(List<com.gecpp.p.product.domain.Product> plist, int currentPage, 
 			int pageSize)
 	{
+		// 20180621 展現下架供應商排序要置後
+		List<com.gecpp.p.product.domain.Product> upperList = new ArrayList<com.gecpp.p.product.domain.Product> ();
+		List<com.gecpp.p.product.domain.Product> lowerList = new ArrayList<com.gecpp.p.product.domain.Product> ();
+		
+		for(com.gecpp.p.product.domain.Product product : plist)
+		{
+			if(product.getSupplier().getStatus().equalsIgnoreCase("2"))
+				lowerList.add(product);
+			else
+				upperList.add(product);
+		}
+		
 		List<com.gecpp.p.product.domain.Product> pageList = new ArrayList<com.gecpp.p.product.domain.Product> ();
     	Map<Integer, List<com.gecpp.p.product.domain.Product>> uniqPn = new HashMap<Integer, List<com.gecpp.p.product.domain.Product>>();
     	
     	String product_id = "";
    
     	int gPage = -1;
-    	for(com.gecpp.p.product.domain.Product product : plist)
+    	for(com.gecpp.p.product.domain.Product product : upperList)
     	{
     		if(product.getPn() == null)
     			continue;
@@ -1902,6 +1914,33 @@ public class OmSearchLogic {
     			uniqPn.put(gPage, id_product);
     			
     			product_id = product.getPn();
+    		}
+    		else
+    		{
+    			List<com.gecpp.p.product.domain.Product> id_product = uniqPn.get(gPage);
+    			
+    			id_product.add(product);
+    			
+    			uniqPn.put(gPage, id_product);
+    		}
+    	}
+    	
+    	product_id = "";
+    	for(com.gecpp.p.product.domain.Product product : lowerList)
+    	{
+    		if(product.getPn() == null)
+    			continue;
+    		
+    		if(!product_id.equalsIgnoreCase(product.getPn()  + " "))
+    		{
+    			gPage++;
+    			
+    			List<com.gecpp.p.product.domain.Product> id_product = new ArrayList<com.gecpp.p.product.domain.Product>();
+    			id_product.add(product);
+    			
+    			uniqPn.put(gPage, id_product);
+    			
+    			product_id = product.getPn() + " ";
     		}
     		else
     		{
