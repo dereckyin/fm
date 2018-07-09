@@ -1296,7 +1296,7 @@ public class FuzzyInstance {
             try {
             	responseCode = con.getResponseCode();
             }
-            catch(ConnectException e)
+            catch(Exception e)
             {
             	return "";
             }

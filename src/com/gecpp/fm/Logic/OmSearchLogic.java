@@ -3102,16 +3102,20 @@ public class OmSearchLogic {
 					}
 					
 					// 先把非合作供應商資料存起來
-					if(FiveProductList.containsKey(pn_mfs))
+					// 20180709  增加一个条件限制，非合作供应商需要限制为国际供应商（supplier_type=2）
+					if(supplier_type == 2)
 					{
-						List<com.gecpp.p.product.domain.Product> value = FiveProductList.get(pn_mfs);
-						value.add(pro);
-					}
-					else
-					{
-						List<com.gecpp.p.product.domain.Product> value = new ArrayList<com.gecpp.p.product.domain.Product>();
-						value.add(pro);
-						FiveProductList.put(pn_mfs, value);
+						if(FiveProductList.containsKey(pn_mfs))
+						{
+							List<com.gecpp.p.product.domain.Product> value = FiveProductList.get(pn_mfs);
+							value.add(pro);
+						}
+						else
+						{
+							List<com.gecpp.p.product.domain.Product> value = new ArrayList<com.gecpp.p.product.domain.Product>();
+							value.add(pro);
+							FiveProductList.put(pn_mfs, value);
+						}
 					}
 				}
 				else
