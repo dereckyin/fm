@@ -1336,7 +1336,8 @@ private List<String> ElasticQuery(String query){
     	
     	String strJson = "";
 		try {
-			strJson = sendGet("http://192.168.3.221:9200" + "/_search/?q=" + "\"" + URLEncoder.encode(query, "UTF-8") + "\"" + "&_source_include=pn&size=1000&from=0");
+			// 2018/08/02 add index for product, mfs, news
+			strJson = sendGet("http://192.168.3.221:9200" + "/product/_search/?q=" + "\"" + URLEncoder.encode(query, "UTF-8") + "\"" + "&_source_include=pn&size=1000&from=0");
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -1371,7 +1372,7 @@ private List<String> ElasticQuery(String query){
 
         if(idArray.size() == 0){
     		try {
-    				strJson = sendGet("http://192.168.3.221:9200" + "/_search/?q=" + CommonUtil.getElasticQueryString(query).replaceAll("/", "//") + "&_source_include=pn&size=1000&from=0");
+    				strJson = sendGet("http://192.168.3.221:9200" + "/product/_search/?q=" + CommonUtil.getElasticQueryString(query).replaceAll("/", "//") + "&_source_include=pn&size=1000&from=0");
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -1719,12 +1720,13 @@ private List<String> ElasticQuery(String query){
 	        		fuzzyResult = FuzzySearchLogic.getFuzzySearch(keyQuery);
 	        	else
 	        	{
+	        		// 2018/08/02 續用  for AAV501100B00000G
 	        		// 废止 fuzzy search
-	        		//fuzzyResult = FuzzySearchLogic.getFuzzySearchId(keyQuery);
+	        		fuzzyResult = FuzzySearchLogic.getFuzzySearchId(keyQuery);
 	        		// reorder 
-	        		//redisResult = SortUtil.RegroupIndexResult(redisResult, fuzzyResult);
+	        		redisResult = SortUtil.RegroupIndexResult(redisResult, fuzzyResult);
 	        		// 直接加在下面
-	        		//redisResult.addAll(fuzzyResult);
+	        		redisResult.addAll(fuzzyResult);
 	        	}
 	        	
 	        	watch.getElapseTimeIndexResult(keyQuery, fuzzyResult);

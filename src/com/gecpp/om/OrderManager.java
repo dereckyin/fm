@@ -1300,7 +1300,7 @@ public class OrderManager {
 		return result;
     }
     
-    protected void WriteToCache(long cacheid, List<com.gecpp.p.product.domain.Product> plist)
+    protected void WriteToCache(final long cacheid, final List<com.gecpp.p.product.domain.Product> plist)
     {
 		//20170919 build cache system 
 

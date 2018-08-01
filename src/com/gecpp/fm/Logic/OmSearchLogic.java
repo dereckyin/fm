@@ -944,7 +944,7 @@ public class OmSearchLogic {
 		return sList;
     }
 	
-	public static List<Map<String, Object>> fetchFromAllTables(String strPn) throws InterruptedException, ExecutionException {
+	public static List<Map<String, Object>> fetchFromAllTables(final String strPn) throws InterruptedException, ExecutionException {
         // Create a ListeningExecutorService (Guava) by wrapping a
         // normal ExecutorService (Java)
 		
@@ -2063,7 +2063,7 @@ public class OmSearchLogic {
 		return returnList;
 	}
 	
-	protected static void WriteToCache(long cacheid, List<Map<String, Object>> plist)
+	protected static void WriteToCache(final long cacheid, final List<Map<String, Object>> plist)
     {
 		//20170919 build cache system 
 
