@@ -132,6 +132,10 @@ public class OrderResultDetail implements Serializable{
     
     private Map<Mfs, List<String>>  mfsPnDescription;	// 2018/03/14 Map<製造商, List<PN>>  mfsPnDescription;
     
+    private Map<String, List<ProductNews>> pn_news;		// 2018/08/03 Map<料號, List<新聞>> 
+    
+    private Map<String, List<ProductDesign>> pn_Design;	// 2018/08/03 Map<料號, List<應用>>
+    
     private float rate;									// RATE
     
 
@@ -372,6 +376,34 @@ public class OrderResultDetail implements Serializable{
 	 */
 	public void setMfsPnDescription(Map<Mfs, List<String>> mfsPnDescription) {
 		this.mfsPnDescription = mfsPnDescription;
+	}
+
+	/**
+	 * @return the pn_news
+	 */
+	public Map<String, List<ProductNews>> getPn_news() {
+		return pn_news;
+	}
+
+	/**
+	 * @param pn_news the pn_news to set
+	 */
+	public void setPn_news(Map<String, List<ProductNews>> pn_news) {
+		this.pn_news = pn_news;
+	}
+
+	/**
+	 * @return the pn_Design
+	 */
+	public Map<String, List<ProductDesign>> getPn_Design() {
+		return pn_Design;
+	}
+
+	/**
+	 * @param pn_Design the pn_Design to set
+	 */
+	public void setPn_Design(Map<String, List<ProductDesign>> pn_Design) {
+		this.pn_Design = pn_Design;
 	}
 
 

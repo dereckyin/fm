@@ -1402,6 +1402,99 @@ private List<String> ElasticQuery(String query){
         return idArray;
     }
     
+	private List<ProductDesign> ElasticQueryDesign(String pn, String org){
+		
+		String strJson = "";
+		try {
+			// 2018/08/02 add index for product, mfs, news
+			strJson = sendGet("http://192.168.3.221:9200" + "/mfs/_search/?pretty&q=\"" + URLEncoder.encode(pn, "UTF-8") + "\"+\"" + URLEncoder.encode(org, "UTF-8") + "\"&size=5&from=0");
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+	    List<ProductDesign> idArray = new ArrayList<ProductDesign>();
+	
+	    JSONArray hitsArray = null;
+	    JSONObject hits = null;
+	    JSONObject source = null;
+	    JSONObject json = null;
+	
+	    try
+	    {
+	    	if("".equalsIgnoreCase(strJson))
+				return idArray;
+	        json = new JSONObject(strJson);
+	        hits = json.getJSONObject("hits");
+	        hitsArray = hits.getJSONArray("hits");
+	
+	        for (int i=0; i<hitsArray.length(); i++) {
+	            JSONObject h = hitsArray.getJSONObject(i);
+	            source = h.getJSONObject("_source");
+	            
+	            ProductDesign obj = new ProductDesign();
+	            obj.setId(Integer.parseInt(source.getString("id")));
+	            obj.setName(source.getString("name"));
+	            obj.setMfs(source.getString("mfs"));
+	            obj.setType(source.getString("total_count").equalsIgnoreCase("1") ? "app" : "design");
+	            
+	            idArray.add(obj);
+	        }
+	    }
+	    catch(Exception e)
+	    {
+	    	e.printStackTrace();
+	    }
+	
+	    return idArray;
+	}
+
+	private List<ProductNews> ElasticQueryNews(String pn, String org){
+	
+		String strJson = "";
+		try {
+			// 2018/08/02 add index for product, mfs, news
+			strJson = sendGet("http://192.168.3.221:9200" + "/news/_search/?pretty&sort=create_time:desc&q=\"" + URLEncoder.encode(pn, "UTF-8") + "\"+\"" + URLEncoder.encode(org, "UTF-8") + "\"&size=5&from=0");
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+	    List<ProductNews> idArray = new ArrayList<ProductNews>();
+	
+	    JSONArray hitsArray = null;
+	    JSONObject hits = null;
+	    JSONObject source = null;
+	    JSONObject json = null;
+	
+	    try
+	    {
+	    	if("".equalsIgnoreCase(strJson))
+				return idArray;
+	        json = new JSONObject(strJson);
+	        hits = json.getJSONObject("hits");
+	        hitsArray = hits.getJSONArray("hits");
+	
+	        for (int i=0; i<hitsArray.length(); i++) {
+	            JSONObject h = hitsArray.getJSONObject(i);
+	            source = h.getJSONObject("_source");
+	            
+	            ProductNews obj = new ProductNews();
+	            obj.setId(Integer.parseInt(source.getString("id")));
+	            obj.setArticle(source.getString("main_title"));
+	            obj.setCdate(source.getString("create_time").substring(0, 10));
+	            
+	            idArray.add(obj);
+	        }
+	    }
+	    catch(Exception e)
+	    {
+	    	e.printStackTrace();
+	    }
+	
+	    return idArray;
+	}
+
     
     /* 20170726 ------------------            新網頁 */
     public OrderResultDetail QueryNewPageV2(String strData, 
@@ -1473,7 +1566,8 @@ private List<String> ElasticQuery(String query){
             strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
             //result.setHighLight(strHighLight);
             
-
+            SetNewsAndDesign(result, strData);
+            
             return result;
             
         }
@@ -1524,7 +1618,8 @@ private List<String> ElasticQuery(String query){
             strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
             //result.setHighLight(strHighLight);
             
-
+            SetNewsAndDesign(result, strData);
+            
             return result;
         }
         
@@ -1580,6 +1675,8 @@ private List<String> ElasticQuery(String query){
             strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
             //result.setHighLight(strHighLight);
             
+            SetNewsAndDesign(result, strData);
+            
             return result;
         }
         
@@ -1611,7 +1708,9 @@ private List<String> ElasticQuery(String query){
       
             // 去除逗號
             //result.setHighLight(strHighLight);
-            
+        	
+        	SetNewsAndDesign(result, strData);
+        	
             return result;
         }
 	
@@ -1655,6 +1754,9 @@ private List<String> ElasticQuery(String query){
 	    	result.setPns(new String[0]);
 	    	//result.setPkg(new String[0]);
 	    	//result.setSupplier(new String[0]);
+	    	
+	    	SetNewsAndDesign(result, strData);
+	    	
 	    	return result;
 	    }
 	    
@@ -1868,8 +1970,43 @@ private List<String> ElasticQuery(String query){
 	    	if(returnMfs.size() > 0)
 	    		result.setMfsStandard(returnMfs);
 	    }
+	    
+	    SetNewsAndDesign(result, strData);
+	    
 	
 	    return result;
+	}
+
+
+
+	/**
+	 * @param result
+	 * 2018/08/03
+	 */
+	private void SetNewsAndDesign(OrderResultDetail result, String qry) {
+		// 2018/08/03 搜尋新聞
+	    if(result.getTotalCount() > 0) {
+	    	Map<String, List<ProductNews>> pn_news = new HashMap<String, List<ProductNews>>();
+	    	Map<String, List<ProductDesign>> pn_design = new HashMap<String, List<ProductDesign>>();
+	    	
+	    	List<ProductDesign> mDesign;
+	    	
+	    	HashMap<String, Map<String, List<com.gecpp.p.product.domain.Product>>> productList = result.getProductList();
+	    	
+	    	for (String key : productList.keySet()) {
+	    		pn_news.put(key, ElasticQueryNews(key, qry));
+	    		pn_design.put(key, ElasticQueryDesign(key, qry));
+	    	}
+	    	
+	    	result.setPn_news(pn_news);
+	    	result.setPn_Design(pn_design);
+	    } else {
+	    	Map<String, List<ProductNews>> pn_news = new HashMap<String, List<ProductNews>>();
+	    	Map<String, List<ProductDesign>> pn_design = new HashMap<String, List<ProductDesign>>();
+	    	
+	    	result.setPn_news(pn_news);
+	    	result.setPn_Design(pn_design);
+	    }
 	}
 	    
     
