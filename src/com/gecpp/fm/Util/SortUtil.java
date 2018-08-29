@@ -150,8 +150,8 @@ public class SortUtil {
 	            		count++;
 	            	}
 	            	
-	            	if(item.getSupplier().getId() == 136)
-	            		count = 100;
+	            	//if(item.getSupplier().getId() == 136)
+	            	//	count = 100;
 	            }
 				pnWeight.put(group_entry.getKey(), count);
 			}

@@ -57,8 +57,12 @@ public class OrderManagerModel {
 		// 20170929 是否有尚未加入cache的料號
 		strSql = "select pn from pm_product where pn = '" + pnKey.replace("'","''") + "' limit 10";
 		sList = db.getList(strSql, Site.pm);
+		if(sList.size() > 0)
+			nCount = 1;
 		
-
+		// 20180829 加入supplier_pn
+		strSql = "select pn from fm_product where supplier_pn = '" + pnKey.replace("'","''") + "' limit 10";
+		sList = db.getList(strSql, Site.fm);
 		if(sList.size() > 0)
 			nCount = 1;
 	
@@ -186,6 +190,12 @@ public static List<String> getPnsByPnKey(String pnKey, String orgKey) {
 		   if (!sList.contains(x) && sList.size() < 50)
 			   sList.add(x);
 		}
+	
+	fmList = getPnsByPnKeyFuzzy(orgKey);
+	for (String x : fmList){
+		   if (!sList.contains(x) && sList.size() < 50)
+			   sList.add(x);
+		}
 
 	return sList;
 
@@ -240,6 +250,16 @@ public static List<String> getPnsByPnKey(String pnKey) {
 		if(sList.size() == 0)
 		{
 			strSql = "select pn from auto_cache_pn where pn like  '" + pnKey.replace("'","''") + "' limit 10 ";
+
+			sList = db.getList(strSql, Site.fm);
+			
+			sList = CommonUtil.removeSpaceList(sList);
+		}
+		
+		// 沒查到再找supplier_pn
+		if(sList.size() == 0)
+		{
+			strSql = "select pn from fm_product where supplier_pn like  '" + pnKey.replace("'","''") + "' limit 10 ";
 
 			sList = db.getList(strSql, Site.fm);
 			

@@ -3675,6 +3675,7 @@ public class OmSearchLogic {
 		return parentid;
 	}
 	
+	
 	public static List<String> Catalog(List<Integer> catalog_ids) {
 		// TODO Auto-generated method stub
 		// 回傳值
@@ -3788,6 +3789,43 @@ public class OmSearchLogic {
 		}
 
         return resultPn;
+	}
+	
+	
+	public static List<Integer> retSupplier(String keyword)
+	{
+		List<Integer> realSupplierIds = new ArrayList<Integer>();
+		
+		if("".equals(keyword.trim()))
+				return realSupplierIds;
+		
+		String strSql = "select id from fm_product where supplier = '" + keyword.toUpperCase() + "' order by id desc limit 500";
+		
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			conn = DbHelper.connectFm();
+
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(strSql);
+			while (rs.next())
+			{
+				realSupplierIds.add(rs.getInt(1));
+			}
+	
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+
+			DbHelper.attemptClose(rs);
+			DbHelper.attemptClose(stmt);
+			DbHelper.attemptClose(conn);
+		}
+
+        return realSupplierIds;
 	}
 	
 	

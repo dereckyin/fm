@@ -1337,7 +1337,7 @@ private List<String> ElasticQuery(String query){
     	String strJson = "";
 		try {
 			// 2018/08/02 add index for product, mfs, news
-			strJson = sendGet("http://192.168.3.221:9200" + "/product/_search/?q=" + "\"" + URLEncoder.encode(query, "UTF-8") + "\"" + "&_source_include=pn&size=1000&from=0");
+			strJson = sendGet("http://192.168.3.221:9200" + "/product/_search?q=" + "\"" + URLEncoder.encode(query, "UTF-8") + "\"" + "&_source_include=pn&size=100&from=0");
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -1370,6 +1370,7 @@ private List<String> ElasticQuery(String query){
         	e.printStackTrace();
         }
 
+        /*
         if(idArray.size() == 0){
     		try {
     				strJson = sendGet("http://192.168.3.221:9200" + "/product/_search/?q=" + CommonUtil.getElasticQueryString(query).replaceAll("/", "//") + "&_source_include=pn&size=1000&from=0");
@@ -1398,16 +1399,17 @@ private List<String> ElasticQuery(String query){
             	e.printStackTrace();
             }
 		}
+		*/
         
         return idArray;
     }
     
-	private List<ProductDesign> ElasticQueryDesign(String pn, String org){
+	private List<ProductDesign> ElasticQueryDesign(String pn, String org, int page){
 		
 		String strJson = "";
 		try {
 			// 2018/08/02 add index for product, mfs, news
-			strJson = sendGet("http://192.168.3.221:9200" + "/mfs/_search/?pretty&q=\"" + URLEncoder.encode(pn, "UTF-8") + "\"+\"" + URLEncoder.encode(org, "UTF-8") + "\"&size=5&from=0");
+			strJson = sendGet("http://192.168.3.221:9200" + "/mfs/_search?pretty&q=\"" + URLEncoder.encode(pn, "UTF-8") + "\"+\"" + URLEncoder.encode(org, "UTF-8") + "\"&size=5&from=" + page * 5);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -1449,12 +1451,12 @@ private List<String> ElasticQuery(String query){
 	    return idArray;
 	}
 
-	private List<ProductNews> ElasticQueryNews(String pn, String org){
+	private List<ProductNews> ElasticQueryNews(String pn, String org, int page){
 	
 		String strJson = "";
 		try {
 			// 2018/08/02 add index for product, mfs, news
-			strJson = sendGet("http://192.168.3.221:9200" + "/news/_search/?pretty&sort=create_time:desc&q=\"" + URLEncoder.encode(pn, "UTF-8") + "\"+\"" + URLEncoder.encode(org, "UTF-8") + "\"&size=5&from=0");
+			strJson = sendGet("http://192.168.3.221:9200" + "/news/_search?pretty&sort=create_time:desc&q=\"" + URLEncoder.encode(pn, "UTF-8") + "\"+\"" + URLEncoder.encode(org, "UTF-8") + "\"&size=5&from=" + page * 5);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -1531,6 +1533,9 @@ private List<String> ElasticQuery(String query){
         // 2018/03/23 for special TE
         if("TE".equalsIgnoreCase(strData.trim()))
         	strData = "TE CONNECTIVITY";
+        
+        // 2018/08/24 判斷是哪一種關鍵字
+        
         
      // if cached_mfs
         List<IndexRate> cachedPnsMfs = KeywordLogic.getCacheMfs(strData);
@@ -1677,6 +1682,28 @@ private List<String> ElasticQuery(String query){
             
             SetNewsAndDesign(result, strData);
             
+            return result;
+        }
+        
+        // 20180829 供應商查詢
+        List<Integer> supplierIds = OmSearchLogic.retSupplier(strData);
+        if(supplierIds.size() > 0)
+        {
+        	
+        	List<String> OmList = new ArrayList<String>();
+        	
+        	// for id Record
+            for(Integer res : supplierIds)
+            {
+            	OmList.add(res.toString());
+            }
+        	
+        	OrderManager om = new OrderManager();
+
+        	result = om.QueryNewPageIdV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
+    	    
+        	SetNewsAndDesign(result, strData);
+        	
             return result;
         }
         
@@ -1900,18 +1927,6 @@ private List<String> ElasticQuery(String query){
 	    else
 	    	result = om.QueryNewPageIdV2(inventory, lead, rohs, mfs, abbreviation, OmList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
 	    
-	    
-	 // 20180517 关于模糊搜索推荐型号 用fuzzy
-	    if(result.getTotalCount() == 0)
-	    {
-	    	List<String> pageList = OmSearchLogic.getFuzzyPns(strData);
-	    	
-	    	if(pageList.size() > 0)
-	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
-	    }
-	    
-	    
-
 	    // 用 elasticSearch
 	    if(result.getTotalCount() == 0)
 	    {
@@ -1944,6 +1959,15 @@ private List<String> ElasticQuery(String query){
 	    		//result = om.QueryNewPageMfsV2(inventory, lead, rohs, mfs, abbreviation, recordPns, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, isLogin, isPaid);
 	    }
 	    
+	    
+	    // 20180517 关于模糊搜索推荐型号 用fuzzy
+	    if(result.getTotalCount() == 0)
+	    {
+	    	List<String> pageList = OmSearchLogic.getFuzzyPns(strData);
+	    	
+	    	if(pageList.size() > 0)
+	    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, core_mfs, isLogin, isPaid);
+	    }
 	    
 	    	
 	  
@@ -1991,11 +2015,21 @@ private List<String> ElasticQuery(String query){
 	    	
 	    	List<ProductDesign> mDesign;
 	    	
+	    	int newsPage = 0;
+	    	int designPage = 0;
+	    	
 	    	HashMap<String, Map<String, List<com.gecpp.p.product.domain.Product>>> productList = result.getProductList();
 	    	
 	    	for (String key : productList.keySet()) {
-	    		pn_news.put(key, ElasticQueryNews(key, qry));
-	    		pn_design.put(key, ElasticQueryDesign(key, qry));
+	    		List<ProductNews> pnList = ElasticQueryNews(key, qry, newsPage);
+	    		if(pnList.size() > 0)
+	    			newsPage++;
+	    		pn_news.put(key, pnList);
+	    		
+	    		List<ProductDesign> deList = ElasticQueryDesign(key, qry, designPage);
+	    		if(deList.size() > 0)
+	    			designPage++;
+	    		pn_design.put(key, deList);
 	    	}
 	    	
 	    	result.setPn_news(pn_news);
