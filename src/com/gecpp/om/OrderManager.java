@@ -525,6 +525,16 @@ public class OrderManager {
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, amount, currencies, catalog_ids);
 		
 		plist = OmSearchLogic.getSupplierListDetail(plist, isLogin, isPaid);
+		
+		// 20181214如果有篩選製造商，則篩選供應商
+		if(mfs != null || abbreviation != null)
+		{
+			m_returnSupplier = getSupplierListDetail(plist);
+			suppliers_count = getSupplierListDetailCount(plist);
+			
+			m_returnMfs = getMfsListDetail(plist);
+			mfsStandard_count = getMfsListDetailCount(plist);
+		}
 
 		//InsertQueryLog("getProductByGroupInStoreDeep", strSql, om_conn);
 		
@@ -832,6 +842,16 @@ public class OrderManager {
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, inventory, hasStock, noStock, hasPrice, hasInquery);
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, lead, rohs, mfs, abbreviation, pkg);
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, amount, currencies, catalog_ids);
+		
+		// 20181214如果有篩選製造商，則篩選供應商
+		if(mfs != null || abbreviation != null)
+		{
+			m_returnSupplier = getSupplierListDetail(plist);
+			suppliers_count = getSupplierListDetailCount(plist);
+			
+			m_returnMfs = getMfsListDetail(plist);
+			mfsStandard_count = getMfsListDetailCount(plist);
+		}
 		//InsertQueryLog("getProductByGroupInStoreDeep", strSql, om_conn);
 		plist = dealWithWebPListRepeatDetail(plist);
 
@@ -1455,6 +1475,17 @@ public class OrderManager {
 		// 20160514 change to search price next time
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, inventory, hasStock, noStock, hasPrice, hasInquery);
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, lead, rohs, mfs, abbreviation, pkg);
+		
+		// 20181214如果有篩選製造商，則篩選供應商
+		if(mfs != null || abbreviation != null)
+		{
+			m_returnSupplier = getSupplierListDetail(plist);
+			suppliers_count = getSupplierListDetailCount(plist);
+			
+			m_returnMfs = getMfsListDetail(plist);
+			mfsStandard_count = getMfsListDetailCount(plist);
+		}
+		
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, amount, currencies, catalog_ids);
 		//InsertQueryLog("getProductByGroupInStoreDeep", strSql, om_conn);
 		plist = dealWithWebPListRepeatDetail(plist);
@@ -1605,6 +1636,15 @@ public class OrderManager {
 		// 20160514 change to search price next time
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, inventory, hasStock, noStock, hasPrice, hasInquery);
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, lead, rohs, mfs, abbreviation, pkg);
+		// 20181214如果有篩選製造商，則篩選供應商
+		if(mfs != null || abbreviation != null)
+		{
+			m_returnSupplier = getSupplierListDetail(plist);
+			suppliers_count = getSupplierListDetailCount(plist);
+			
+			m_returnMfs = getMfsListDetail(plist);
+			mfsStandard_count = getMfsListDetailCount(plist);
+		}
 		
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, amount, currencies, catalog_ids);
 		
@@ -4763,6 +4803,7 @@ private List<com.gecpp.p.product.domain.Product> dealWithWebPListRepeatDetail(Li
 			ret.setId((Integer) map.get("id"));
 			ret.setName((String) map.get("chinese_name"));
 			ret.setEname((String) map.get("english_name"));
+			ret.setPathname((String) map.get("pathname"));
 			
 			// search in qegoo_catagory 
 			if((Integer) map.get("parent_id") != 0)

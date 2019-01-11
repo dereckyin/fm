@@ -1,12 +1,19 @@
 package com.gecpp.fm;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
 
 import com.caucho.hessian.server.HessianServlet;
 import com.gecpp.fm.Util.LogQueryHistory;
@@ -240,8 +247,66 @@ public class ServiceImpl extends HessianServlet implements IFuzzySearch {
 			int currentPage, 
 			int pageSize)
 	{
+		/*
+		QueryParam para = new QueryParam();
+		para.strData = strData;
+		para.inventory = inventory;
+		para.lead = lead;
+		para.rohs = rohs;
+		para.mfs = mfs;
+		para.abbreviation = abbreviation;
+		para.pkg = pkg;
+		para.hasStock = hasStock;
+		para.noStock = noStock;
+		para.hasPrice = hasPrice;
+		para.hasInquery = hasInquery;
+		para.amount = amount;
+		para.currencies = currencies;
+		para.catalog_ids = catalog_ids;
+		para.isLogin = isLogin;
+		para.isPaid = isPaid;
+		para.currentPage = currentPage;
+		para.pageSize = pageSize;
+		
+		OrderResultDetail result = null;
+		
+		String json = "";
+		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+		try {
+			json = ow.writeValueAsString(para);
+		} catch (JsonGenerationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (JsonMappingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		if(!json.equalsIgnoreCase(""))
+		{
+			try {
+				result = QueryCacheUtil.QueryCache.get(json);
+			} catch (ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		if(result == null)
+		{
+			FuzzyInstance fi = new FuzzyInstance();
+			result = fi.QueryNewPageV2(strData, inventory, lead, rohs, mfs, abbreviation, pkg, hasStock, noStock, hasPrice, hasInquery, amount, currencies, catalog_ids, isLogin, isPaid, currentPage, pageSize);
+		
+		}
+		
+		*/
 		FuzzyInstance fi = new FuzzyInstance();
 		OrderResultDetail result = fi.QueryNewPageV2(strData, inventory, lead, rohs, mfs, abbreviation, pkg, hasStock, noStock, hasPrice, hasInquery, amount, currencies, catalog_ids, isLogin, isPaid, currentPage, pageSize);
+	
+		LogQueryHistory.InsertLog("ServiceImpl", "QueryNewPageV2()");
 		
 		return result;
 	}

@@ -82,6 +82,8 @@ public class OrderResultDetail implements Serializable{
      * TODO fm需实现该属性值
      */
     private String[] pns;
+    
+    private Map<String, Double> pns_similarity;
 
     /**
      * 页面展示的产品
@@ -404,6 +406,20 @@ public class OrderResultDetail implements Serializable{
 	 */
 	public void setPn_Design(Map<String, List<ProductDesign>> pn_Design) {
 		this.pn_Design = pn_Design;
+	}
+
+	/**
+	 * @return the pns_similarity
+	 */
+	public Map<String, Double> getPns_similarity() {
+		return pns_similarity;
+	}
+
+	/**
+	 * @param pns_similarity the pns_similarity to set
+	 */
+	public void setPns_similarity(Map<String, Double> pns_similarity) {
+		this.pns_similarity = pns_similarity;
 	}
 
 

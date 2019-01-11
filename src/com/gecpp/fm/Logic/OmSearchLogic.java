@@ -36,6 +36,7 @@ import com.gecpp.fm.MultipleParam;
 import com.gecpp.fm.Dao.IndexPrice;
 import com.gecpp.fm.Dao.IndexRate;
 import com.gecpp.fm.Dao.IndexResult;
+import com.gecpp.fm.Dao.MfsAlternateDao;
 import com.gecpp.fm.Dao.Product;
 import com.gecpp.fm.Dao.ProductConfig;
 import com.gecpp.fm.Util.CommonUtil;
@@ -59,6 +60,9 @@ import me.xdrop.fuzzywuzzy.FuzzySearch;
 import me.xdrop.fuzzywuzzy.model.ExtractedResult;
 
 public class OmSearchLogic {
+	
+	private static List<String> cachedSupplier = null;
+	private static long cacheTime = System.currentTimeMillis();
 	
 	// 20160513價格庫存另外查
 	/*
@@ -584,6 +588,52 @@ public class OmSearchLogic {
         }
 
         return pnSql;
+	}
+	
+private static void refreshCacheSupplier() {
+		
+		long nowDate = System.currentTimeMillis();
+		
+		// 12個小時更換一次cache
+		if(nowDate - cacheTime > 12 * 60 * 60 * 1000)
+		{
+			cachedSupplier = null;
+		}
+		
+		if(cachedSupplier == null)
+		{
+			cachedSupplier = new ArrayList<String>();
+			cacheTime = nowDate;
+			
+			String strSql = "select upper(abbreviation) from pm_supplier";
+		
+			try {
+	
+				Connection conn = null;
+				Statement stmt = null;
+				ResultSet rs = null;
+	
+				try {
+	
+					conn = DbHelper.connectPm();
+					stmt = conn.createStatement();
+					rs = stmt.executeQuery(strSql);
+					while (rs.next())
+					{
+						cachedSupplier.add(rs.getString(1));
+					}
+				}
+				finally {
+					DbHelper.attemptClose(rs);
+					DbHelper.attemptClose(stmt);
+					DbHelper.attemptClose(conn);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+
 	}
 	
 	public static String getFormatPnPage(List<IndexResult> notRepeatPns, int page, int pagesize)
@@ -3794,10 +3844,15 @@ public class OmSearchLogic {
 	
 	public static List<Integer> retSupplier(String keyword)
 	{
+		refreshCacheSupplier();
+		
 		List<Integer> realSupplierIds = new ArrayList<Integer>();
 		
 		if("".equals(keyword.trim()))
 				return realSupplierIds;
+		
+		if(!cachedSupplier.contains(keyword.toUpperCase()))
+			return realSupplierIds;
 		
 		String strSql = "select id from fm_product where supplier = '" + keyword.toUpperCase() + "' order by id desc limit 500";
 		
@@ -4107,6 +4162,10 @@ private static List<String> getFuzzyPn(String alphabat, int limit) {
 
 		List<String> sList = new ArrayList<>();
 		
+		// 避免非正常料號的查詢
+		//if(alphabat.length() > 16)
+			return sList;
+		/*
 		Connection conn = null;
 		PreparedStatement  pstmt = null;
 		ResultSet rs = null;
@@ -4138,6 +4197,7 @@ private static List<String> getFuzzyPn(String alphabat, int limit) {
 		
 
 		return sList;
+		*/
     }
 	
 private static List<Integer> sortCatalog(List<Integer> catalogId, int limit) {

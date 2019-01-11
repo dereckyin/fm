@@ -1534,6 +1534,9 @@ private List<String> ElasticQuery(String query){
         if("TE".equalsIgnoreCase(strData.trim()))
         	strData = "TE CONNECTIVITY";
         
+        // 2018/0831 限制查詢為8個字
+        strData = limitQueryWords(strData.trim());
+        
         // 2018/08/24 判斷是哪一種關鍵字
         
         
@@ -2032,14 +2035,26 @@ private List<String> ElasticQuery(String query){
 	    		pn_design.put(key, deList);
 	    	}
 	    	
+	    	Map<String, Double> pn_similarity = new HashMap<String, Double>();
+	    	
+	    	for (String pn : result.getPns())
+	    	{
+	    		double sim = Math.sqrt(similarity(pn, qry));
+	    		pn_similarity.put(pn, sim);
+	    	}
+	    	
 	    	result.setPn_news(pn_news);
 	    	result.setPn_Design(pn_design);
+	    	result.setPns_similarity(pn_similarity);
 	    } else {
 	    	Map<String, List<ProductNews>> pn_news = new HashMap<String, List<ProductNews>>();
 	    	Map<String, List<ProductDesign>> pn_design = new HashMap<String, List<ProductDesign>>();
 	    	
+	    	Map<String, Double> pn_similarity = new HashMap<String, Double>();
+	    	
 	    	result.setPn_news(pn_news);
 	    	result.setPn_Design(pn_design);
+	    	result.setPns_similarity(pn_similarity);
 	    }
 	}
 	    
@@ -3955,6 +3970,23 @@ private List<String> ElasticQuery(String query){
 		}
 		
 		return pid;
+	}
+	
+	private String limitQueryWords(String sInput) {
+		if("".endsWith(sInput))
+			return "";
+		
+		String newInput = "";
+		String [] sTerms = sInput.split(" ");
+		int i = 0;
+		for(String term : sTerms)
+		{
+			newInput += term + " ";
+			i++;
+			if(i>8)
+				break;
+		}
+		return newInput.trim();
 	}
 
 	public int GetIndexIDStatus(int pid) {
