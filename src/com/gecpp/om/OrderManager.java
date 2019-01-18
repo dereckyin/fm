@@ -1020,7 +1020,16 @@ public class OrderManager {
 		
 		plist = OmSearchLogic.getPriceByProductListDetail(plist, amount, currencies, catalog_ids);
 		
-		
+		// 20181214如果有篩選製造商，則篩選供應商
+		if(mfs != null || abbreviation != null)
+		{
+			m_returnSupplier = getSupplierListDetail(plist);
+			suppliers_count = getSupplierListDetailCount(plist);
+			
+			m_returnMfs = getMfsListDetail(plist);
+			mfsStandard_count = getMfsListDetailCount(plist);
+			
+		}
 		
 		//InsertQueryLog("getProductByGroupInStoreDeep", strSql, om_conn);
 		
@@ -1074,7 +1083,13 @@ public class OrderManager {
         result = truncateMapByValuesM(result);
         
         //result.setTotalCount(OmSearchLogic.pageCountDetail(plist));
-        result.setTotalCount(notRepeatPns.size());
+        
+        // 20181214如果有篩選製造商，則篩選供應商
+ 		if(mfs != null || abbreviation != null)
+ 			result.setTotalCount(OmSearchLogic.pageCountDetail(plist));
+ 		else	
+ 			result.setTotalCount(notRepeatPns.size());
+        
         
      // 2018/03/14
         result.setMfsPnDescription(m_mfsPnDescription);

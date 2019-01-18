@@ -1717,6 +1717,20 @@ private List<String> ElasticQuery(String query){
         	List<String> catalogPns = OmSearchLogic.Catalog(catalog_ids);
         	List<IndexRate> aRet = new ArrayList<IndexRate>();
         	
+        	// 如果輸入的查詢有問題，回傳空的結果
+    	    if(catalogPns.size() == 0)
+    	    {
+    	    	result = new OrderResultDetail();
+    	    	result.setTotalCount(0);
+    	    	result.setPns(new String[0]);
+    	    	//result.setPkg(new String[0]);
+    	    	//result.setSupplier(new String[0]);
+    	    	
+    	    	SetNewsAndDesign(result, strData);
+    	    	
+    	    	return result;
+    	    }
+        	
         	// for Pns Record
             int count = 0;
             for(String res : catalogPns)
