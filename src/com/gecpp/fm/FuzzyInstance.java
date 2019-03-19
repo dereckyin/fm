@@ -1530,6 +1530,95 @@ private List<String> ElasticQuery(String query){
         // 20180506 transfer Big5 to Simplified chinese
         strData = ChineseUtils.toSimplified(strData);
         
+        
+        // 20190319 用 elasticSearch
+        String[] keywordArray = null;
+        String strInput = strData.toUpperCase();
+		keywordArray = strInput.replaceAll("^[,\\s]+", "").split("[\\s]+");
+        if(keywordArray.length > 3)
+        {
+        	String strJson = "";
+        	List<String> eIndex = new ArrayList<String>();
+        	
+        	// 2018/0831 限制查詢為8個字
+        	strInput = limitQueryWords(strInput.trim());
+        	
+        	try {
+					strJson = sendGet("http://192.168.3.221:9200" + "/product/_search/?q=" + CommonUtil.getElasticQueryString(strInput).replaceAll("/", "//") + "&_source_include=pn&size=500&from=0");
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+        	JSONArray hitsArray = null;
+            JSONObject hits = null;
+            JSONObject source = null;
+            JSONObject json = null;
+            
+			try
+	        {
+				if(!"".equalsIgnoreCase(strJson)){
+			        json = new JSONObject(strJson);
+			        hits = json.getJSONObject("hits");
+			        hitsArray = hits.getJSONArray("hits");
+			
+			        for (int i=0; i<hitsArray.length(); i++) {
+			            JSONObject h = hitsArray.getJSONObject(i);
+			            source = h.getJSONObject("_source");
+			            String object = (source.getString("pn"));
+			            eIndex.add(object);
+			        }
+				}
+	        }
+	        catch(Exception e)
+	        {
+	        	e.printStackTrace();
+	        }
+	    	
+	    	if(eIndex.size() != 0){
+	    		
+			    List<String> OmList1 = new ArrayList<String>();
+			  
+			    Set<String> uniqueGas = new HashSet<String>(eIndex);
+			    OmList1.addAll(uniqueGas);
+			    
+			    // sort pn
+			    List<IndexRate> recordPns = SortUtil.SortPnByCount(OmList1);
+			    List<String> pageList = new ArrayList<String>();
+			    int count = 0;
+	            for(IndexRate res : recordPns)
+	            {
+	            	pageList.add(res.getPn());
+	            	count++;
+	            	
+	            	if(count > 500)
+	            		break;
+	            }
+	            
+	            OrderManager om = new OrderManager();
+	            List<String> dummyMfs = new ArrayList<String>();
+			 
+		    	if(OmList1.size() > 0)
+		    		result = om.QueryNewPageV2(inventory, lead, rohs, mfs, abbreviation, pageList, pkg, hasStock, noStock, hasPrice, hasInquery, currentPage, pageSize, amount, currencies, catalog_ids, dummyMfs, isLogin, isPaid);
+		 
+		    
+			    // 20180517 关于模糊搜索推荐型号 用fuzzy
+			    if(result.getTotalCount() != 0)
+			    {
+			    	String strHighLight = "";
+			        for(String stoken:keywordArray)
+			        {
+			        	strHighLight += stoken + ",";
+			        }
+				
+				    // 去除逗號
+				    strHighLight = strHighLight.substring(0, strHighLight.length() - 1);
+				    SetNewsAndDesign(result, strData);
+				    return result;
+			    }
+	    	}
+        }
+        
         // 2018/03/23 for special TE
         if("TE".equalsIgnoreCase(strData.trim()))
         	strData = "TE CONNECTIVITY";

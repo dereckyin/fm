@@ -30,7 +30,8 @@ public class PmSearchLogic {
 		
 		for(int i=0; i<keys.size(); i++)
 		{
-			if(kinds.get(i).equals(KeywordKind.IsPn))
+			// 20190309 fix for TSOP1738 IR receiver
+			if(kinds.get(i).equals(KeywordKind.IsPn) && !keys.get(i).equalsIgnoreCase("IR"))
 			{
 				String pnkey = CommonUtil.parsePnKey(keys.get(i));
 				List<String> tokenpns = OrderManagerModel.getPnsByPnKey(pnkey, keys.get(i));
