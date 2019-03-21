@@ -165,6 +165,7 @@ public class OmSearchLogic {
 	private static final String getAllInfoDetailById_head_Multi = "select s_id, region, region_code, product_id, inventory, offical_price, price, delivery_place, delivery_circle, moq, store_attach, currency, model, supplier_model, created_time, id, uuid, "
 			+ "pn, supplier_pn, mfs, mfs_id,  supplier_id, shop_id, pkg, catalog, description, param, status, lead, embgo, rohs, config_service, grab_url, doc_url, pic_url, update_attribute, updated_time,  "
 			+ "is_complete, name, local_name, prority, abbreviation, mfs_base, advertise, site_error, catalog_id, tax, type, cooperation, supplier_type, supplier_status "
+			+ ", open_detail, detail_noprice, detail_hasprice_nostock, detail_hasprice_hasstock, detail_url_type "
 			+ "from "
 			+ "( "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
@@ -177,6 +178,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_product b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -192,6 +194,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_c1s b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -207,6 +210,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_octopart b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -222,6 +226,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_findchips b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -237,6 +242,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_463 b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -252,6 +258,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_findic b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -267,6 +274,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_ickey b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -278,6 +286,7 @@ public class OmSearchLogic {
 	private static final String getAllInfoDetailByPn_head_Multi = "select s_id, region, region_code, product_id, inventory, offical_price, price, delivery_place, delivery_circle, moq, store_attach, currency, model, supplier_model, created_time, id, uuid, "
 			+ "pn, supplier_pn, mfs, mfs_id,  supplier_id, shop_id, pkg, catalog, description, param, status, lead, embgo, rohs, config_service, grab_url, doc_url, pic_url, update_attribute, updated_time,  "
 			+ "is_complete, name, local_name, prority, abbreviation, mfs_base, advertise, site_error, catalog_id, tax, type, cooperation, supplier_type, supplier_status "
+			+ ", open_detail, detail_noprice, detail_hasprice_nostock, detail_hasprice_hasstock, detail_url_type "
 			+ "from "
 			+ "( "
 			+ "SELECT a.id as s_id,a.region,a.region_code, "
@@ -290,6 +299,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_product b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -305,6 +315,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_c1s b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -320,6 +331,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_octopart b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -335,6 +347,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_findchips b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -350,6 +363,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_463 b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -365,6 +379,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_findic b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -380,6 +395,7 @@ public class OmSearchLogic {
 			+ "b.param, b.status, b.lead, b.embgo, b.rohs, b.config_service,  "
 			+ "b.grab_url, b.doc_url, b.pic_url,  b.update_attribute, b.updated_time, b.is_complete, "
 			+ "c.name,c.local_name , c.type as prority, c.abbreviation ,d.name as mfs_base, c.advertise, c.site_error, b.catalog_id, e.tax, c.type, c.cooperation, c.supplier_type, coalesce(c.status, '1')  supplier_status  "
+			+ ", coalesce(c.open_detail, false) open_detail, coalesce(c.detail_noprice, '') detail_noprice, coalesce(c.detail_hasprice_nostock, '') detail_hasprice_nostock, coalesce(c.detail_hasprice_hasstock, '') detail_hasprice_hasstock, coalesce(c.detail_url_type, 0) detail_url_type  "
 			+ "FROM pm_supplier_product_ickey b  LEFT JOIN pm_store_price_select a on a.product_id = b.id  "
 			+ "LEFT JOIN pm_product_config e on(e.supplier_id=b.supplier_id) "
 			+ "LEFT JOIN pm_mfs_standard d on (b.mfs_id = d.id),  pm_supplier c   "
@@ -2436,13 +2452,18 @@ private static void refreshCacheSupplier() {
             // 供应商表&制造商表
             List<Store> storeList = new ArrayList<Store>();
             Supplier supplier = new Supplier();
-            supplier.setId(((Integer) map.get("supplier_id")));
+            supplier.setId((Integer) map.get("supplier_id"));
             supplier.setName((String) map.get("name"));
             supplier.setLocalName((String) map.get("local_name"));
             supplier.setAbbreviation((String) map.get("abbreviation"));
             supplier.setSiteError((String) map.get("site_error"));
             supplier.setType((Integer) map.get("type"));
             
+            supplier.setOpenDetail((Boolean) map.get("open_detail"));
+            supplier.setDetailNoprice((String) map.get("detail_noprice"));
+            supplier.setDetailHaspriceNostock((String) map.get("detail_hasprice_nostock"));
+            supplier.setDetailHaspriceHasstock((String) map.get("detail_hasprice_hasstock"));
+            supplier.setDetailUrlType((Integer) map.get("detail_url_type"));
             
             supplier.setStatus((String) map.get("supplier_status"));
             

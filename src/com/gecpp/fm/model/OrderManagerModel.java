@@ -409,7 +409,6 @@ public static List<String> getPnsByPnKey(String pnKey) {
 						sList.setUpdatedTime(rs.getDate(8));
 						sList.setAdvertise(rs.getString(9));
 						sList.setPriority(rs.getInt(10));
-						
 					}
 					
 				}
